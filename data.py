@@ -25,10 +25,10 @@ def coupled_wiener_process(T, N, alpha, lag, seed1=None, seed2=None):
     V, time = wiener_process(T=T, N=N, seed=seed2)
 
     Y = []
-    for i in range(lag,len(time)):
+    for i in range(lag, len(time)):
         Y.append(alpha*X[i-lag]+(1-alpha)*V[i])
 
-    dataset = pd.DataFrame({"Y": Y, "X": X[lag:], "time": time[lag:]})
+    dataset = pd.DataFrame({"Y": Y, "X_lagged": X[:-lag], "time": time[lag:]})
     dataset.set_index("time", inplace=True)
 
     return dataset
@@ -50,7 +50,7 @@ def tenary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, s
     for j in range(lag,len(time)):
         Y.append(alpha*X[j-lag]+beta*Z[j-lag]+(1-alpha-beta)*V[j])
 
-    dataset = pd.DataFrame({"Y": Y, "X": X[lag:], "Z":Z[lag:], "time": time[lag:]})
+    dataset = pd.DataFrame({"Y": Y, "X_lagged": X[:-lag], "Z_lagged": Z[:-lag], "time": time[lag:]})
     dataset.set_index("time", inplace=True)
 
     return dataset
