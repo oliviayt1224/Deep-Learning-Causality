@@ -48,19 +48,3 @@ def conditional_linear_TE(X, Y, Z, lag, df):
     transfer_entropies = granger_causality / 2
 
     return transfer_entropies
-
-
-# data1 = coupled_wiener_process(T=1, N=100, alpha=0.5, lag=5)
-# col_names = data1.columns.values.tolist()
-# print(linear_TE(col_names[1], col_names[0], 5, data1))
-#
-data2 = tenary_wiener_process(T=1, N=100, alpha=0.2, phi=0.5, beta=0.5, lag=5)
-col_names = data2.columns.values.tolist()
-print("conditional_linear_TE:")
-print(conditional_linear_TE(col_names[1], col_names[0], col_names[2], 5, data2))
-print("normal_linear_TE:")
-print(linear_TE(col_names[1], col_names[0], 5, data2))
-
-# data3 = coupled_logistic_map(S1 = 0.5, S2 = 0.5, T = 1, N = 100, alpha = 0.5, epsilon = 0.5, r=4)
-# col_names = data3.columns.values.tolist()
-# print(linear_TE(col_names[1], col_names[0], 5, data3))
