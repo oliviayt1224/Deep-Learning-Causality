@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import copy
 
-
 # Generating a Wiener Process
 def wiener_process(T, N, seed):
 
@@ -34,7 +33,7 @@ def coupled_wiener_process(T, N, alpha, lag, seed1=None, seed2=None):
     return dataset
 
 
-def tenary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, seed3=None):
+def ternary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, seed3=None):
     Z, time = wiener_process(T=T, N=N, seed=seed1)
     V, time = wiener_process(T=T, N=N, seed=seed2)
 
@@ -64,18 +63,18 @@ def coupling_function(p, epsilon, r):
     return (1 - epsilon) * mapping_function(p, r) + epsilon * mapping_function(mapping_function(p, r), r)
 
 
-def coupled_logistic_map(S1, S2, T, N, alpha, epsilon, r=4):
-    # Generate index and initialise S1, S2 lists
+def coupled_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
+    # Generate index and initialise X, Y lists
     timesteps = list(np.linspace(0, T, N))
-    (S1, S2) = ([S1], [S2])
+    (X, Y) = ([X], [Y])
 
     # Populate time series
-    [S1.append(mapping_function(S1[n], r)) for n in range(N - 1)]
+    [X.append(mapping_function(X[n], r)) for n in range(N - 1)]
 
-    [S2.append((1 - alpha) * mapping_function(S2[n], r) + alpha * coupling_function(S1[n], epsilon, r)) for n in range(N - 1)]
+    [Y.append((1 - alpha) * mapping_function(Y[n], r) + alpha * coupling_function(X[n], epsilon, r)) for n in range(N - 1)]
 
     # Return DataFrame
-    walk = pd.DataFrame({"S2": S2, "S1": S1, "time": timesteps})
+    walk = pd.DataFrame({"Y": Y, "X": X, "time": timesteps})
     walk.set_index("time", inplace=True)
 
     return walk
