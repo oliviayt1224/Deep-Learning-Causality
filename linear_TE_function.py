@@ -24,20 +24,14 @@ class TE:
         return granger_causality / 2
 
 
-    def linear_TE(self, dataset, shuffle = "no", ternary = False):
+    def linear_TE(self, dataset, dist):
         # Initialise list to return TEs
-        if shuffle == "no":
 
-            dataset["Y_lagged"] = dataset["Y"].shift(periods=self.lag)
-            dataset = dataset.dropna(axis=0, how='any')
-            self.dataset = dataset
-
-
-        if ternary == False:
+        if dist == "cwp" or "clp":
             joint_residuals = (sm.OLS(dataset["Y"], sm.add_constant(dataset[["Y_lagged", "X_lagged"]])).fit().resid)
             independent_residuals = (sm.OLS(dataset["Y"], sm.add_constant(dataset["Y_lagged"])).fit().resid)
 
-        if ternary == True:
+        if dist == "twp":
             joint_residuals = (sm.OLS(dataset["Y"], sm.add_constant(dataset[["Y_lagged", "X_lagged", "Z_lagged"]])).fit().resid)
             independent_residuals = (sm.OLS(dataset["Y"], sm.add_constant(dataset[["Y_lagged","X_lagged"]])).fit().resid)
 
@@ -79,6 +73,9 @@ class TE_cwp(TE):
 
     def data_generation(self):
         dataset = coupled_wiener_process(self.T, self.N, self.alpha, self.lag, self.seed1, self.seed2)
+        dataset["Y_lagged"] = dataset["Y"].shift(periods=self.lag)
+        dataset = dataset.dropna(axis=0, how='any')
+        self.dataset = dataset
         self.update_dataset(dataset)
 
     def multiple_experiment(self, num_exp):
@@ -87,13 +84,12 @@ class TE_cwp(TE):
             if i > 0:
                 self.data_generation()
 
-            TE = self.linear_TE(self.dataset)
+            TE = self.linear_TE(self.dataset, dist="cwp")
             self.TE_list.append(TE)
 
             dataset_shuffle = self.shuffle_series(self.dataset)
-            TE_shuffle = self.linear_TE(dataset_shuffle, shuffle="yes")
+            TE_shuffle = self.linear_TE(dataset_shuffle, dist="cwp")
             self.TE_list_shuffle.append(TE_shuffle)
-
 
 
 class TE_twp(TE):
@@ -111,6 +107,9 @@ class TE_twp(TE):
 
     def data_generation(self):
         dataset = ternary_wiener_process(self.T, self.N, self.alpha, self.phi, self.beta, self.lag, seed1=None, seed2=None, seed3=None)
+        dataset["Y_lagged"] = dataset["Y"].shift(periods=self.lag)
+        dataset = dataset.dropna(axis=0, how='any')
+        self.dataset = dataset
         self.update_dataset(dataset)
 
     def multiple_experiment(self, num_exp):
@@ -119,16 +118,50 @@ class TE_twp(TE):
             if i > 0:
                 self.data_generation()
 
-            TE = self.linear_TE(self.dataset, "no", True)
+            TE = self.linear_TE(self.dataset, dist="twp")
             self.TE_list.append(TE)
 
             dataset_shuffle = self.shuffle_series(self.dataset)
-            TE_shuffle = self.linear_TE(dataset_shuffle, shuffle="yes", ternary= True)
+            TE_shuffle = self.linear_TE(dataset_shuffle, dist="twp")
+            self.TE_list_shuffle.append(TE_shuffle)
+
+
+class TE_clp(TE):
+
+    def __init__(self, X, Y, T, N, alpha, epsilon, lag, r=4):
+        TE.__init__(self, lag)
+        self.T = T
+        self.N = N
+        self.alpha = alpha
+        self.X = X
+        self.Y = Y
+        self.epsilon = epsilon
+        self.r = r
+
+    def data_generation(self):
+        dataset = coupled_logistic_map(self.X, self.Y, self.T, self.N, self.alpha, self.epsilon, self.r)
+        dataset["Y_lagged"] = dataset["Y"].shift(periods=self.lag)
+        dataset["X_lagged"] = dataset["X"].shift(periods=self.lag)
+        dataset = dataset.dropna(axis=0, how='any')
+        self.dataset = dataset
+        self.update_dataset(dataset)
+
+    def multiple_experiment(self, num_exp):
+        for i in range(num_exp):
+
+            if i > 0:
+                self.data_generation()
+
+            TE = self.linear_TE(self.dataset, dist="clp")
+            self.TE_list.append(TE)
+
+            dataset_shuffle = self.shuffle_series(self.dataset)
+            TE_shuffle = self.linear_TE(dataset_shuffle, dist="clp")
             self.TE_list_shuffle.append(TE_shuffle)
 
 
 
-a = TE_twp(T=1, N=100, alpha=0.2, phi=0.5, beta=0.5, lag=5)
+a = TE_clp(X=0.5, Y=0.5, T =1, N =100, alpha=0.5, epsilon=0.5, lag = 5, r=4)
 a.data_generation()
 a.multiple_experiment(100)
 a.compute_z_scores()
