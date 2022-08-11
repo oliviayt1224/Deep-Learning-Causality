@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import copy
 
 # Generating a Wiener Process
 def wiener_process(T, N, seed):
