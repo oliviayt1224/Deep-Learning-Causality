@@ -1,14 +1,15 @@
-import numpy as np
 import statsmodels.api as sm
 from data_generation import *
-from MLP import *
+from data_preprocessing import *
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers
+import random
+
 
 class TE:
-    def __init__(self, lag = 0, dataset = pd.DataFrame([]), TE_list_linear =[], TE_list_shuffle_linear=[],
-                 TE_list_nonlinear =[], TE_list_shuffle_nonlinear=[], z_scores_linear = [], z_scores_nonlinear = []):
+    def __init__(self, lag=0, dataset=pd.DataFrame([]), TE_list_linear=[], TE_list_shuffle_linear=[],
+                 TE_list_nonlinear=[], TE_list_shuffle_nonlinear=[], z_scores_linear=[], z_scores_nonlinear=[]):
         self.lag = lag
         self.dataset = dataset
         self.TE_list_linear = TE_list_linear
@@ -22,23 +23,21 @@ class TE:
         self.dataset = new_dataset
 
     def TE_calculation(self, jr, ir):
+
         var_jr = np.var(jr)
         var_ir = np.var(ir)
         # Use Geweke's formula for Granger Causality
-        granger_causality = np.log(var_ir / var_jr)
 
+        if var_jr > 0:
+            granger_causality = np.log(var_ir / var_jr)
+            return granger_causality / 2
         # Calculate Linear Transfer Entropy from Granger Causality
-        return granger_causality / 2
-
-    def training_testing_set(self, dataset, percentage):
-        split_pos = round(dataset.shape[0] * percentage)
-        training_set = dataset.iloc[0:split_pos]
-        testing_set = dataset.iloc[split_pos:]
-        return training_set, testing_set
+        else:
+            return False
 
     def linear_TE(self, dataset, dist, splitting_percentage=0.7):
 
-        training_set, testing_set = self.training_testing_set(dataset, splitting_percentage)
+        training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
 
         if dist == "cwp" or "clp":
             ols_joint = sm.OLS(training_set["Y"], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
@@ -97,14 +96,13 @@ class TE:
 
     def MLP(self, X, Y, percentage):
 
-        training_X, testing_X, training_Y, testing_Y = training_testing_set(X, Y, percentage)
+        training_X, testing_X, training_Y, testing_Y = training_testing_set_nonlinear(X, Y, percentage)
         dim = training_X.shape[1]
         model = keras.Sequential()
         model.add(layers.Dense(100, activation='relu', input_dim=dim))
         model.add(layers.Dense(1))
         model.compile(optimizer='adam', loss='mse')
 
-        # model.fit(training_X, training_Y, validation_split=0.33, epochs=150, batch_size=10,callbacks=[history])
         model.fit(training_X, training_Y, validation_split=0.33, epochs=15, batch_size=10)
         ypred = model.predict(testing_X)
         resi = testing_Y - ypred
@@ -122,7 +120,7 @@ class TE:
 
 class TE_cwp(TE):
 
-    def __init__(self, T, N, alpha, lag, seed1=None, seed2=None):
+    def __init__(self, T=1, N=200, alpha=0.5, lag=5, seed1=None, seed2=None):
         TE.__init__(self, lag)
         self.T = T
         self.N = N
@@ -144,22 +142,26 @@ class TE_cwp(TE):
             if i > 0:
                 self.data_generation()
 
-            TE = self.linear_TE(self.dataset, self.dist, splitting_percentage)
-            self.TE_list_linear.append(TE)
+            TE_linear = self.linear_TE(self.dataset, self.dist, splitting_percentage)
 
-            X_jr, Y_jr = data_for_MLP_XY(self.dataset)
-            X_ir, Y_ir = data_for_MLP_Y(self.dataset)
-            TE = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
-            self.TE_list_nonlinear.append(TE)
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(self.dataset)
+            TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
 
             dataset_shuffle = self.shuffle_series(self.dataset)
-            TE_shuffle = self.linear_TE(dataset_shuffle, self.dist, splitting_percentage)
-            self.TE_list_shuffle_linear.append(TE_shuffle)
+            TE_shuffle_linear = self.linear_TE(dataset_shuffle, self.dist, splitting_percentage)
+            if TE!=False:
+                self.TE_list_shuffle_linear.append(TE_shuffle_linear)
 
-            X_jr, Y_jr = data_for_MLP_XY(dataset_shuffle)
-            X_ir, Y_ir = data_for_MLP_Y(dataset_shuffle)
-            TE_shuffle = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
-            self.TE_list_shuffle_nonlinear.append(TE_shuffle)
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(dataset_shuffle)
+            TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+            if TE_linear != False and TE_shuffle_linear != False:
+                self.TE_list_linear.append(TE_linear)
+                self.TE_list_shuffle_linear.append(TE_shuffle_linear)
+
+            if TE_nonlinear != False and TE_shuffle_nonlinear != False:
+                self.TE_list_nonlinear.append(TE_nonlinear)
+                self.TE_list_shuffle_nonlinear.append(TE_shuffle_nonlinear)
 
 
 class TE_twp(TE):
@@ -189,23 +191,22 @@ class TE_twp(TE):
             if i > 0:
                 self.data_generation()
 
-            TE = self.linear_TE(self.dataset, self.dist, splitting_percentage)
-            self.TE_list_linear.append(TE)
+            TE_linear = self.linear_TE(self.dataset, self.dist, splitting_percentage)
 
-            X_jr, Y_jr = data_for_MLP_XYZ(self.dataset)
-            X_ir, Y_ir = data_for_MLP_XY(self.dataset)
-            TE = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
-            self.TE_list_nonlinear.append(TE)
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(self.dataset)
+            TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
 
             dataset_shuffle = self.shuffle_series(self.dataset)
-            TE_shuffle = self.linear_TE(dataset_shuffle, self.dist, splitting_percentage)
-            self.TE_list_shuffle_linear.append(TE_shuffle)
+            TE_shuffle_linear = self.linear_TE(dataset_shuffle, self.dist, splitting_percentage)
 
-            # encoded_dataset = sc.fit_transform(dataset_shuffle)
-            X_jr, Y_jr = data_for_MLP_XYZ(dataset_shuffle)
-            X_ir, Y_ir = data_for_MLP_XY(dataset_shuffle)
-            TE_shuffle = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
-            self.TE_list_shuffle_nonlinear.append(TE_shuffle)
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(dataset_shuffle)
+            TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+            if TE_linear != False and TE_shuffle_linear != False and TE_nonlinear != False and TE_shuffle_nonlinear != False:
+                self.TE_list_linear.append(TE_linear)
+                self.TE_list_shuffle_linear.append(TE_shuffle_linear)
+                self.TE_list_nonlinear.append(TE_nonlinear)
+                self.TE_list_shuffle_nonlinear.append(TE_shuffle_nonlinear)
 
 
 class TE_clp(TE):
@@ -229,50 +230,55 @@ class TE_clp(TE):
         self.dataset = dataset
         self.update_dataset(dataset)
 
-    def multiple_experiment(self, num_exp, splitting_percentage=0.7):
+    def varying_XY(self):
+        self.X = random.random()
+        self.Y = random.random()
+
+    def varying_coeff(self):
+        self.alpha = random.random()
+        self.epsilon = random.random()
+
+    def multiple_experiment(self, num_exp, splitting_percentage=0.7, varying_choice = "XY"):
         for i in range(num_exp):
 
             if i > 0:
-                self.data_generation()
+                if varying_choice == "XY":
+                    self.varying_XY()
+                    self.data_generation()
+                if varying_choice == "coeff":
+                    self.varying_coeff()
+                    self.data_generation()
 
-            TE = self.linear_TE(self.dataset, self.dist, splitting_percentage)
-            self.TE_list_linear.append(TE)
+            TE_linear = self.linear_TE(self.dataset, self.dist, splitting_percentage)
 
-            X_jr, Y_jr = data_for_MLP_XY(self.dataset)
-            X_ir, Y_ir = data_for_MLP_Y(self.dataset)
-            TE = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
-            self.TE_list_nonlinear.append(TE)
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(self.dataset)
+            TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
 
             dataset_shuffle = self.shuffle_series(self.dataset)
-            TE_shuffle = self.linear_TE(dataset_shuffle, self.dist, splitting_percentage)
-            self.TE_list_shuffle_linear.append(TE_shuffle)
+            TE_shuffle_linear = self.linear_TE(dataset_shuffle, self.dist, splitting_percentage)
 
-            # encoded_dataset = sc.fit_transform(dataset_shuffle)
-            X_jr, Y_jr = data_for_MLP_XY(dataset_shuffle)
-            X_ir, Y_ir = data_for_MLP_Y(dataset_shuffle)
-            TE_shuffle = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
-            self.TE_list_shuffle_nonlinear.append(TE_shuffle)
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(dataset_shuffle)
+            TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+            if TE_linear != False and TE_shuffle_linear != False and TE_nonlinear != False and TE_shuffle_nonlinear != False:
+                self.TE_list_linear.append(TE_linear)
+                self.TE_list_shuffle_linear.append(TE_shuffle_linear)
+                self.TE_list_nonlinear.append(TE_nonlinear)
+                self.TE_list_shuffle_nonlinear.append(TE_shuffle_nonlinear)
 
 
 
 # # a = TE_cwp(T = 1, N = 100, alpha = 0.5, lag = 5, seed1=None, seed2=None)
 # # a = TE_twp(T=1, N=100, alpha=0.5, phi=0.5, beta=0.5, lag=5, seed1=None, seed2=None, seed3=None)
-# a = TE_clp(X = 0.5, Y = 0.4, T = 1, N = 100, alpha = 0.2, epsilon = 0.4, lag = 5, r=4)
-# a.data_generation()
-# a.multiple_experiment_linearTE(100)
-# a.compute_z_scores()
-# print(a.TE_list)
-# print(a.TE_list_shuffle)
-# # print(a.z_scores)
-# print(np.mean(a.z_scores))
+# a = TE_clp(X = 0.5, Y = 0.4, T = 1, N = 100, alpha = 0.2, epsilon = 0.4, r=4)
 
-a = TE_clp(X = 0.5, Y = 0.4, T = 1, N = 500, alpha = 0.2, epsilon = 1, r=4)
+a = TE_clp(X = 0.5, Y = 0.4, T = 1, N = 300, alpha = 0.4, epsilon = 0.9, r=4)
 a.data_generation()
-a.multiple_experiment(10)
+a.multiple_experiment(100)
 a.compute_z_scores()
-# print(a.TE_list_)
-# print(a.TE_list_shuffle)
-# print(a.z_scores_linear)
+# # print(a.TE_list_)
+# # print(a.TE_list_shuffle)
+# # print(a.z_scores_linear)
 print(np.mean(a.z_scores_linear))
-# print(a.z_scores_nonlinear)
+# # print(a.z_scores_nonlinear)
 print(np.mean(a.z_scores_nonlinear))
