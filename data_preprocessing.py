@@ -1,4 +1,4 @@
-from data_generation import *
+import numpy as np
 
 
 def data_for_MLP_XY_Y(dataset):
