@@ -8,11 +8,11 @@ from Functions.input_validation import *
 def process_cwp():
     """Set the command line arguments."""
     parser = argparse.ArgumentParser(prog='Deep Learning Causality for Coupled Wiener Processes', description='Investigate the Granger causality using linear and non-linear measures.')
-    parser.add_argument('--T', nargs=1, type=str, help='Specify the time length.')
-    parser.add_argument('--N', nargs=1, type=int, help='Specify the time step.')
-    parser.add_argument('--alpha', nargs=1, type=str, help='Specify the coefficient alpha.')
-    parser.add_argument('--lag', nargs=1, type=int, help='Specify the value of time-lag.')
-    parser.add_argument('--num_exp', nargs=1, type=int, help='Specify the number of experiments.')
+    parser.add_argument('--T', type=float, help='Specify the time length.')
+    parser.add_argument('--N', type=int, help='Specify the time step.')
+    parser.add_argument('--alpha', type=float, help='Specify the coefficient alpha.')
+    parser.add_argument('--lag', type=int, help='Specify the value of time-lag.')
+    parser.add_argument('--num_exp', type=int, help='Specify the number of experiments.')
 
     args = parser.parse_args()
 
@@ -54,9 +54,10 @@ def process_cwp():
         print(error_message)
 
     else:
-        print("The mean of the linear z-scores for coupled wiener processes after {} experiments is {:.2f} seconds.".format(num_exp, z_mean_linear))
-        print("The mean of the nonlinear z-scores for coupled wiener processes after {} experiments is {:.2f} seconds.".format(num_exp,
+        print("The mean of the linear z-scores for coupled wiener processes after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
+        print("The mean of the nonlinear z-scores for coupled wiener processes after {} experiments is {:.2f}.".format(num_exp,
                                                                                                                 z_mean_nonlinear))
+
 
 if __name__ == "__main__":
     process_cwp()
