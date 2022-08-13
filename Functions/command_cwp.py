@@ -18,52 +18,46 @@ def process_cwp():
 
     try:
         if args.T != None:
-
-            T = validation_T()
-            queue_list = queue_validation(args.queue)
-            queue = list_to_queue(queue_list)
-
-            num_tap = num_tap_validation(args.num_tap)
-
-            if (args.walk_time != None):
-                walk_time = walk_time_validation(args.walk_time)
-
-                if (args.flow_rate != None):
-
-
-                    flow_rate = flow_rate_validation(num_tap, args.flow_rate)
-
-                    args.num_tap = len(flow_rate)
-                    time = fill_water_diff_flow(queue, num_tap, walk_time, flow_rate)
-
-                else:
-
-                    time = fill_water_walk_time(queue, num_tap, walk_time)
-
-            else:
-
-                time = fill_water_same_flow(queue, num_tap)
-
+            T = validation_T(args.T)
         else:
-            raise RuntimeError("Invalid use of the command. Please check the usage information below.")
+            T = 1
+
+        if args.N != None:
+            N = validation_N(args.N)
+        else:
+            N = 100
+
+        if args.alpha != None:
+            alpha = validation_coeff(args.alpha)
+        else:
+            alpha = 0.5
+
+        if args.lag != None:
+            lag = validation_lag(args.lag)
+        else:
+            lag = 5
+
+        if args.num_exp != None:
+            num_exp = validation_num_exp(args.num_exp)
+        else:
+            num_exp = 100
+
+        validation_N_lag(N, lag)
+        cwp = TE_cwp(T, N, alpha, lag)
+        cwp.data_generation()
+        cwp.multiple_experiment(num_exp)
+        cwp.compute_z_scores()
+        z_mean_linear = np.mean(cwp.z_scores_linear)
+        z_mean_nonlinear = np.mean(cwp.z_scores_nonlinear)
 
     except ValueError as error_message:
         print(error_message)
 
-    except RuntimeError as error_message:
-        print(error_message)
-        print("Three different modules of this command:")
-        print("Module 1 (no walking time and same flow rates): ")
-        print("\t You should specify the queue and the number of taps.")
-        print("Module 2 (a fixed walking time and same flow rates): ")
-        print("\t You should specify the queue, the number of taps and the walking time.")
-        print("Module 3 (a fixed walking time and different flow rates): ")
-        print("\t You should specify the queue, the number of taps, the walking time and the flow rates.")
-
     else:
-        print("The total time for all people filling up their water bottles is {:.2f} seconds.".format(time))
-
+        print("The mean of the linear z-scores for coupled wiener processes after {} experiments is {:.2f} seconds.".format(num_exp, z_mean_linear))
+        print("The mean of the nonlinear z-scores for coupled wiener processes after {} experiments is {:.2f} seconds.".format(num_exp,
+                                                                                                                z_mean_nonlinear))
 
 if __name__ == "__main__":
-    process()
+    process_cwp()
 
