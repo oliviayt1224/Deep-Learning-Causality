@@ -1,27 +1,15 @@
 def validation_coeff(coeff):
-    try:
-        float(coeff)
-
-    except Exception:
-        raise ValueError("The value of the coefficient should be a float. Please try again.")
-
-    if float(coeff) <= 0 or float(coeff) >= 1:
+    if coeff <= 0 or coeff >= 1:
         raise ValueError("The value of the coefficient should be in range of (0,1). Please try again.")
 
-    return float(coeff)
+    return coeff
 
 
 def validation_T(T):
-    try:
-        float(T)
-
-    except Exception:
-        raise ValueError("The value of T should be a float. Please try again.")
-
-    if float(T) <= 0:
+    if T <= 0:
         raise ValueError("The value of T should be larger than zero. Please try again.")
 
-    return float(T)
+    return T
 
 
 def validation_N(N):
@@ -48,6 +36,13 @@ def validation_num_exp(num_exp):
         raise ValueError("The number of experiments should be larger than zero. Please try again.")
 
     return num_exp
+
+
+def validation_XY(initial_value):
+    if initial_value <= 0 or initial_value >= 1:
+        raise ValueError("The initial value should be in range of (0,1). Please try again.")
+
+    return initial_value
 
 
 
