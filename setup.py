@@ -9,6 +9,7 @@ setup(
     packages=find_packages(),
     install_requires=['argparse', 'pytest'],
     entry_points={'console_scripts': ['cwp=Functions.command_cwp:process_cwp',
-                                      'fun2=Functions.command:main'],
+                                      'twp=Functions.command_twp:process_twp',
+                                      'clm=Functions.command_clm:process_clm'],
                   }
 )
