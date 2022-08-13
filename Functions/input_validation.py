@@ -10,6 +10,7 @@ def validation_coeff(coeff):
 
     return float(coeff)
 
+
 def validation_T(T):
     try:
         float(T)
@@ -27,10 +28,14 @@ def validation_N(N):
     if N <= 0:
         raise ValueError("The value of N should be larger than zero. Please try again.")
 
+    return N
+
 
 def validation_lag(lag):
     if lag <= 0:
         raise ValueError("The value of lag should be larger than zero. Please try again.")
+
+    return lag
 
 
 def validation_N_lag(N, lag):
@@ -41,6 +46,8 @@ def validation_N_lag(N, lag):
 def validation_num_exp(num_exp):
     if num_exp <= 0:
         raise ValueError("The number of experiments should be larger than zero. Please try again.")
+
+    return num_exp
 
 
 
