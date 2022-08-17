@@ -1,8 +1,8 @@
 import argparse
 import sys
 sys.path.append('.')
-from Functions.TE_class_functions import *
-from Functions.input_validation import *
+from DLcausality.functions.TE_class_functions import *
+from DLcausality.functions.input_validation import *
 
 
 def process_twp():
@@ -27,7 +27,7 @@ def process_twp():
         if args.N != None:
             N = validation_N(args.N)
         else:
-            N = 100
+            N = 300
 
         if args.alpha != None:
             alpha = validation_coeff(args.alpha)
@@ -58,7 +58,8 @@ def process_twp():
         twp = TE_twp(T, N, alpha, phi, beta, lag)
         twp.data_generation()
         twp.multiple_experiment(num_exp)
-        twp.compute_z_scores()
+        twp.compute_z_scores(twp.dist)
+        md_TE_linear, md_TE_nonlinear = twp.mean_of_diff_TE()
         z_mean_linear = np.mean(twp.z_scores_linear)
         z_mean_nonlinear = np.mean(twp.z_scores_nonlinear)
 
@@ -67,8 +68,9 @@ def process_twp():
 
     else:
         print("The mean of the linear z-scores for ternary wiener processes after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
-        print("The mean of the nonlinear z-scores for ternary wiener processes after {} experiments is {:.2f}.".format(num_exp,
-                                                                                                                z_mean_nonlinear))
+        print("The mean of the nonlinear z-scores for ternary wiener processes after {} experiments is {:.2f}.".format(num_exp, z_mean_nonlinear))
+        print("The mean of the difference between linear TE and conditional TE is {:.2f}.".format(md_TE_linear))
+        print("The mean of the difference between nonlinear TE and conditional TE is {:.2f}.".format(md_TE_nonlinear))
 
 
 if __name__ == "__main__":

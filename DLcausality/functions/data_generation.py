@@ -43,7 +43,7 @@ def ternary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, 
     Y = []
 
     for i in range(len(time)):
-        X.append(phi*np.random.normal()*np.sqrt(time[i])+(1-phi)*Z[i])
+        X.append((1-phi)*np.random.normal()*np.sqrt(time[i])+phi*Z[i])
 
     for j in range(lag,len(time)):
         Y.append(alpha*X[j-lag]+beta*Z[j-lag]+(1-alpha-beta)*V[j])
@@ -77,3 +77,22 @@ def coupled_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
     walk.set_index("time", inplace=True)
 
     return walk
+
+
+def ternary_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
+    timesteps = list(np.linspace(0, T, N+1))
+    dt = T/N
+    (X, Y, Z) = ([X], [Y], [0])
+    for i in range(1,N+1):
+        Z.append(np.sqrt(i*dt)*np.random.uniform())
+        X.append(mapping_function(X[i-1],r))
+
+    for i in range(1,N+1):
+        Y.append((1 - alpha) * mapping_function(Y[i-1], r) + alpha * coupling_function(X[i-1], epsilon, r)*Z[i-1])
+    # Return DataFrame
+    walk = pd.DataFrame({"Y": Y, "X": X, "Z": Z, "time": timesteps})
+    walk.set_index("time", inplace=True)
+
+    return walk
+
+
