@@ -80,15 +80,16 @@ def coupled_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
 
 
 def ternary_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
-    timesteps = list(np.linspace(0, T, N+1))
-    dt = T/N
-    (X, Y, Z) = ([X], [Y], [0])
-    for i in range(1,N+1):
-        Z.append(np.sqrt(i*dt)*np.random.uniform())
-        X.append(mapping_function(X[i-1],r))
 
-    for i in range(1,N+1):
-        Y.append((1 - alpha) * mapping_function(Y[i-1], r) + alpha * coupling_function(X[i-1], epsilon, r)*Z[i-1])
+    timesteps = list(np.linspace(0, T, N))
+    (X, Y, Z) = ([X], [Y], [np.random.uniform()])
+
+    # Populate time series
+    [X.append(mapping_function(X[n], r)) for n in range(N - 1)]
+    [Z.append(np.random.uniform()) for n in range(N-1)]
+    [Y.append((1 - alpha) * mapping_function(Y[n], r) + alpha * coupling_function(X[n], epsilon, r)*Z[n]) for n in
+     range(N - 1)]
+
     # Return DataFrame
     walk = pd.DataFrame({"Y": Y, "X": X, "Z": Z, "time": timesteps})
     walk.set_index("time", inplace=True)
