@@ -58,7 +58,7 @@ def process_twp():
         twp = TE_twp(T, N, alpha, phi, beta, lag)
         twp.data_generation()
         twp.multiple_experiment(num_exp)
-        twp.compute_z_scores(twp.dist)
+        twp.compute_z_scores_t()
         md_TE_linear, md_TE_nonlinear = twp.mean_of_diff_TE()
         z_mean_linear = np.mean(twp.z_scores_linear)
         z_mean_nonlinear = np.mean(twp.z_scores_nonlinear)

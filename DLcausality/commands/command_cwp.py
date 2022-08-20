@@ -46,7 +46,7 @@ def process_cwp():
         cwp = TE_cwp(T, N, alpha, lag)
         cwp.data_generation()
         cwp.multiple_experiment(num_exp)
-        cwp.compute_z_scores(cwp.dist)
+        cwp.compute_z_scores_c()
         z_mean_linear = np.mean(cwp.z_scores_linear)
         z_mean_nonlinear = np.mean(cwp.z_scores_nonlinear)
 

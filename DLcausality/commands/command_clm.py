@@ -43,10 +43,10 @@ def process_clm():
 
 
         validation_N_lag(N, 1)
-        clm = TE_clm(0.5, 0.4, T, N, alpha, epsilon)
+        clm = TE_clm(0.4, 0.4, T, N, alpha, epsilon)
         clm.data_generation()
         clm.multiple_experiment(num_exp)
-        clm.compute_z_scores(clm.dist)
+        clm.compute_z_scores_c()
         z_mean_linear = np.mean(clm.z_scores_linear)
         z_mean_nonlinear = np.mean(clm.z_scores_nonlinear)
 

@@ -24,17 +24,17 @@ def process_tlm():
         if args.N != None:
             N = validation_N(args.N)
         else:
-            N = 1000
+            N = 700
 
         if args.alpha != None:
             alpha = validation_coeff(args.alpha)
         else:
-            alpha = 0.5
+            alpha = 0.4
 
         if args.epsilon != None:
             epsilon = validation_coeff(args.epsilon)
         else:
-            epsilon = 0.5
+            epsilon = 0.9
 
         if args.num_exp != None:
             num_exp = validation_num_exp(args.num_exp)
@@ -42,10 +42,10 @@ def process_tlm():
             num_exp = 100
 
         validation_N_lag(N, 1)
-        tlm = TE_tlm(0.5, 0.4, T, N, alpha, epsilon)
+        tlm = TE_tlm(0.4, 0.4, T, N, alpha, epsilon)
         tlm.data_generation()
         tlm.multiple_experiment(num_exp)
-        tlm.compute_z_scores(tlm.dist)
+        tlm.compute_z_scores_t()
         md_TE_linear, md_TE_nonlinear = tlm.mean_of_diff_TE()
         z_mean_linear = np.mean(tlm.z_scores_linear)
         z_mean_nonlinear = np.mean(tlm.z_scores_nonlinear)
