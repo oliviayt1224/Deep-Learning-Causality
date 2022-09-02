@@ -9,7 +9,8 @@ import random
 
 class TE:
     def __init__(self, lag=0, dataset=pd.DataFrame([]), TE_list_linear=[], TE_list_shuffle_linear=[],
-                 TE_list_nonlinear=[], TE_list_linear_con = [], TE_list_nonlinear_con = [], TE_list_shuffle_nonlinear=[],TE_list_shuffle_linear_con=[], TE_list_shuffle_nonlinear_con=[], z_scores_linear=[], z_scores_nonlinear=[], signal=True):
+                 TE_list_nonlinear=[], TE_list_linear_con = [], TE_list_nonlinear_con = [], TE_list_shuffle_nonlinear=[],TE_list_shuffle_linear_con=[], TE_list_shuffle_nonlinear_con=[], z_scores_linear=[], z_scores_nonlinear=[], TE_list_lin_rev=[], TE_list_shuffle_lin_rev=[],
+                 TE_list_nonlin_rev=[], TE_list_lin_con_rev = [], TE_list_nonlin_con_rev = [], TE_list_shuffle_nonlin_rev=[],TE_list_shuffle_lin_con_rev=[], TE_list_shuffle_nonlin_con_rev=[], z_scores_lin_rev=[], z_scores_nonlin_rev=[], signal=True):
         self.lag = lag
         self.dataset = dataset
         self.TE_list_linear = TE_list_linear
@@ -23,6 +24,16 @@ class TE:
         self.TE_list_nonlinear_con = TE_list_nonlinear_con
         self.TE_list_shuffle_linear_con = TE_list_shuffle_linear_con
         self.TE_list_shuffle_nonlinear_con = TE_list_shuffle_nonlinear_con
+        self.TE_list_lin_rev = TE_list_lin_rev
+        self.TE_list_shuffle_lin_rev = TE_list_shuffle_lin_rev
+        self.TE_list_nonlin_rev = TE_list_nonlin_rev
+        self.TE_list_lin_con_rev = TE_list_lin_con_rev
+        self.TE_list_nonlin_con_rev = TE_list_nonlin_con_rev
+        self.TE_list_shuffle_nonlin_rev = TE_list_shuffle_nonlin_rev
+        self.TE_list_shuffle_lin_con_rev = TE_list_shuffle_lin_con_rev
+        self.TE_list_shuffle_nonlin_con_rev = TE_list_shuffle_nonlin_con_rev
+        self.z_scores_lin_rev = z_scores_lin_rev
+        self.z_scores_nonlin_rev = z_scores_nonlin_rev
 
     def update_dataset(self, new_dataset):
         self.dataset = new_dataset
@@ -46,64 +57,188 @@ class TE:
             self.signal = False
         return self.signal
 
-    def linear_TE_XY(self, dataset, splitting_percentage=0.7):
+    def linear_TE_XY(self, dataset, dependent_var="Y", splitting_percentage=0.7):
 
         training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
 
-        ols_joint = sm.OLS(training_set["Y"], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
+        ols_joint = sm.OLS(training_set[dependent_var], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
         Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged"]])
 
         if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged"]], Xpred):
             ypred = ols_joint.predict(Xpred)
-            joint_residuals = testing_set["Y"] - ypred
+            joint_residuals = testing_set[dependent_var] - ypred
 
-            ols_independent = sm.OLS(training_set["Y"], sm.add_constant(training_set["Y_lagged"])).fit()
-            Xpred = sm.add_constant(testing_set["Y_lagged"])
+            lag = "_lagged"
+            dependent_var_lag = dependent_var + lag
+
+            ols_independent = sm.OLS(training_set[dependent_var], sm.add_constant(training_set[dependent_var_lag])).fit()
+            Xpred = sm.add_constant(testing_set[dependent_var_lag])
             ypred = ols_independent.predict(Xpred)
-            independent_residuals = testing_set["Y"] - ypred
+            independent_residuals = testing_set[dependent_var] - ypred
 
-            transfer_entropy = self.TE_calculation(joint_residuals, independent_residuals)
+            TE = self.TE_calculation(joint_residuals, independent_residuals)
 
         else:
-            transfer_entropy = None
+            TE = None
 
-        return transfer_entropy
+        return TE
 
-    def linear_TE_XYZ(self, dataset, splitting_percentage=0.7):
+    # def linear_TE_XY(self, dataset, splitting_percentage=0.7):
+    #
+    #     training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
+    #
+    #     ols_joint = sm.OLS(training_set["Y"], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
+    #     Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged"]])
+    #
+    #     if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged"]], Xpred):
+    #         ypred = ols_joint.predict(Xpred)
+    #         joint_residuals = testing_set["Y"] - ypred
+    #
+    #         ols_independent = sm.OLS(training_set["Y"], sm.add_constant(training_set["Y_lagged"])).fit()
+    #         Xpred = sm.add_constant(testing_set["Y_lagged"])
+    #         ypred = ols_independent.predict(Xpred)
+    #         independent_residuals = testing_set["Y"] - ypred
+    #
+    #         TE = self.TE_calculation(joint_residuals, independent_residuals)
+    #
+    #     else:
+    #         TE = None
+    #
+    #     return TE
+    #
+    # def linear_TE_XY_reverse(self, dataset, splitting_percentage=0.7):
+    #
+    #     training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
+    #
+    #     ols_joint_reverse = sm.OLS(training_set["X"], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
+    #     Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged"]])
+    #
+    #     if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged"]], Xpred):
+    #         ypred = ols_joint_reverse.predict(Xpred)
+    #         joint_residuals = testing_set["X"] - ypred
+    #
+    #         ols_independent_reverse = sm.OLS(training_set["X"], sm.add_constant(training_set["X_lagged"])).fit()
+    #         Xpred = sm.add_constant(testing_set["X_lagged"])
+    #         ypred = ols_independent_reverse.predict(Xpred)
+    #         independent_residuals = testing_set["X"] - ypred
+    #
+    #         TE_reverse = self.TE_calculation(joint_residuals, independent_residuals)
+    #
+    #     else:
+    #         TE_reverse = None
+    #
+    #     return TE_reverse
+
+    # def linear_TE_XYZ(self, dataset, dependent_var="X", splitting_percentage=0.7):
+    #
+    #     training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
+    #
+    #     ols_joint = sm.OLS(training_set["Y"], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
+    #     Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged"]])
+    #
+    #     if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged"]], Xpred):
+    #         ypred = ols_joint.predict(Xpred)
+    #         residuals_XY = testing_set["Y"] - ypred
+    #
+    #         ols_independent = sm.OLS(training_set["Y"], sm.add_constant(training_set["Y_lagged"])).fit()
+    #         Xpred = sm.add_constant(testing_set["Y_lagged"])
+    #         ypred = ols_independent.predict(Xpred)
+    #         residuals_Y = testing_set["Y"] - ypred
+    #
+    #         transfer_entropy = self.TE_calculation(residuals_XY, residuals_Y)
+    #
+    #         ols_joint = sm.OLS(training_set["Y"], sm.add_constant(training_set[["Y_lagged", "X_lagged", "Z_lagged"]])).fit()
+    #         Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged", "Z_lagged"]])
+    #
+    #         if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged", "Z_lagged"]], Xpred):
+    #             ypred = ols_joint.predict(Xpred)
+    #             residuals_XYZ = testing_set["Y"] - ypred
+    #
+    #             # Calculate Linear Transfer Entropy from Granger Causality
+    #             transfer_entropy_con = self.TE_calculation(residuals_XYZ, residuals_XY)
+    #
+    #         else:
+    #             transfer_entropy_con = None
+    #     else:
+    #         transfer_entropy = None
+    #         transfer_entropy_con = None
+    #
+    #     return transfer_entropy, transfer_entropy_con
+
+    def linear_TE_XYZ(self, dataset, dependent_var="Y", splitting_percentage=0.7):
 
         training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
 
-        ols_joint = sm.OLS(training_set["Y"], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
+        ols_joint = sm.OLS(training_set[dependent_var], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
         Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged"]])
 
         if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged"]], Xpred):
             ypred = ols_joint.predict(Xpred)
-            residuals_XY = testing_set["Y"] - ypred
+            residuals_XY = testing_set[dependent_var] - ypred
 
-            ols_independent = sm.OLS(training_set["Y"], sm.add_constant(training_set["Y_lagged"])).fit()
-            Xpred = sm.add_constant(testing_set["Y_lagged"])
+            lag = "_lagged"
+            dependent_var_lag = dependent_var + lag
+
+            ols_independent = sm.OLS(training_set[dependent_var], sm.add_constant(training_set[dependent_var_lag])).fit()
+            Xpred = sm.add_constant(testing_set[dependent_var_lag])
             ypred = ols_independent.predict(Xpred)
-            residuals_Y = testing_set["Y"] - ypred
+            residuals_Y = testing_set[dependent_var] - ypred
 
-            transfer_entropy = self.TE_calculation(residuals_XY, residuals_Y)
+            TE = self.TE_calculation(residuals_XY, residuals_Y)
 
-            ols_joint = sm.OLS(training_set["Y"], sm.add_constant(training_set[["Y_lagged", "X_lagged", "Z_lagged"]])).fit()
+            ols_joint = sm.OLS(training_set[dependent_var], sm.add_constant(training_set[["Y_lagged", "X_lagged", "Z_lagged"]])).fit()
             Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged", "Z_lagged"]])
 
             if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged", "Z_lagged"]], Xpred):
                 ypred = ols_joint.predict(Xpred)
-                residuals_XYZ = testing_set["Y"] - ypred
+                residuals_XYZ = testing_set[dependent_var] - ypred
 
                 # Calculate Linear Transfer Entropy from Granger Causality
-                transfer_entropy_con = self.TE_calculation(residuals_XYZ, residuals_XY)
+                TE_con = self.TE_calculation(residuals_XYZ, residuals_XY)
 
             else:
-                transfer_entropy_con = None
+                TE_con = None
         else:
-            transfer_entropy = None
-            transfer_entropy_con = None
+            TE = None
+            TE_con = None
 
-        return transfer_entropy, transfer_entropy_con
+        return TE, TE_con
+
+    # def linear_TE_XYZ_reverse(self, dataset, splitting_percentage=0.7):
+    #
+    #     training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
+    #
+    #     ols_joint_reverse = sm.OLS(training_set["X"], sm.add_constant(training_set[["Y_lagged", "X_lagged"]])).fit()
+    #     Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged"]])
+    #
+    #     if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged"]], Xpred):
+    #         ypred = ols_joint_reverse.predict(Xpred)
+    #         residuals_XY = testing_set["X"] - ypred
+    #
+    #         ols_independent_reverse = sm.OLS(training_set["X"], sm.add_constant(training_set["X_lagged"])).fit()
+    #         Xpred = sm.add_constant(testing_set["X_lagged"])
+    #         ypred = ols_independent_reverse.predict(Xpred)
+    #         residuals_Y = testing_set["X"] - ypred
+    #
+    #         TE_reverse = self.TE_calculation(residuals_XY, residuals_Y)
+    #
+    #         ols_joint_reverse = sm.OLS(training_set["X"], sm.add_constant(training_set[["Y_lagged", "X_lagged", "Z_lagged"]])).fit()
+    #         Xpred = sm.add_constant(testing_set[["Y_lagged", "X_lagged", "Z_lagged"]])
+    #
+    #         if self.validation_Xpred(testing_set[["Y_lagged", "X_lagged", "Z_lagged"]], Xpred):
+    #             ypred = ols_joint_reverse.predict(Xpred)
+    #             residuals_XYZ = testing_set["X"] - ypred
+    #
+    #             # Calculate Linear Transfer Entropy from Granger Causality
+    #             TE_con_reverse = self.TE_calculation(residuals_XYZ, residuals_XY)
+    #
+    #         else:
+    #             TE_con_reverse = None
+    #     else:
+    #         TE_reverse = None
+    #         TE_con_reverse = None
+    #
+    #     return TE_reverse, TE_con_reverse
 
     def shuffle_series(self, DF, only=None):
 
@@ -307,6 +442,7 @@ class TE_clm(TE):
         dataset = coupled_logistic_map(self.X, self.Y, self.T, self.N, self.alpha, self.epsilon, self.r)
         dataset["Y_lagged"] = dataset["Y"].shift(periods=self.lag)
         dataset["X_lagged"] = dataset["X"].shift(periods=self.lag)
+        dataset["X_lag_lag"] = dataset["X_lagged"].shift(periods=self.lag)
         dataset = dataset.dropna(axis=0, how='any')
         self.dataset = dataset
         self.update_dataset(dataset)
