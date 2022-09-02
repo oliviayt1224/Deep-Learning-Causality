@@ -26,7 +26,9 @@ def coupled_wiener_process(T, N, alpha, lag, seed1=None, seed2=None):
     for i in range(lag, len(time)):
         Y.append(alpha*X[i-lag]+(1-alpha)*V[i])
 
-    dataset = pd.DataFrame({"Y": Y, "X_lagged": X[:-lag], "time": time[lag:]})
+    dataset = pd.DataFrame({"Y": Y, "X_lagged": X[:-lag], "X": X[lag:], "time": time[lag:]})
+    dataset["Y_lagged"] = dataset["Y"].shift(periods=lag)
+    dataset = dataset.dropna(axis=0, how='any')
     dataset.set_index("time", inplace=True)
 
     return dataset
@@ -48,7 +50,9 @@ def ternary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, 
     for j in range(lag,len(time)):
         Y.append(alpha*X[j-lag]+beta*Z[j-lag]+(1-alpha-beta)*V[j])
 
-    dataset = pd.DataFrame({"Y": Y, "X_lagged": X[:-lag], "Z_lagged": Z[:-lag], "time": time[lag:]})
+    dataset = pd.DataFrame({"Y": Y, "X_lagged": X[:-lag], "X": X[lag:], "Z_lagged": Z[:-lag], "time": time[lag:]})
+    dataset["Y_lagged"] = dataset["Y"].shift(periods=lag)
+    dataset = dataset.dropna(axis=0, how='any')
     dataset.set_index("time", inplace=True)
 
     return dataset
@@ -87,7 +91,7 @@ def ternary_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
     # Populate time series
     [X.append(mapping_function(X[n], r)) for n in range(N - 1)]
     [Z.append(np.random.uniform()) for n in range(N-1)]
-    [Y.append((1 - alpha) * mapping_function(Y[n], r) + alpha * coupling_function(X[n], epsilon, r)*Z[n]) for n in
+    [Y.append((1 - alpha) * mapping_function(Y[n], r) + alpha * coupling_function(X[n], epsilon, r)*Z[n]*Z[n]) for n in
      range(N - 1)]
 
     # Return DataFrame
