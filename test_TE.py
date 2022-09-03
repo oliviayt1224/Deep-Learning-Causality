@@ -91,7 +91,7 @@ def test_linear_TE_cwp(T):
 
 @pytest.mark.parametrize('T', [1, 1, 1, 1, 1])
 def test_nonlinear_TE_cwp(T):
-    cwp = TE_twp(T, N=200, alpha=0.5, lag=5, seed1=None, seed2=None)
+    cwp = TE_cwp(T, N=200, alpha=0.5, lag=5, seed1=None, seed2=None)
     cwp.data_generation()
     X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(cwp.dataset)
     TE = cwp.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir)
@@ -135,7 +135,7 @@ def test_linear_TE_twp(T):
     assert TE > 0 and TE_con > 0
 
 
-@pytest.mark.parametrize('X,Y', [(random.random(), random.random()), (random.random(), random.random())])
+@pytest.mark.parametrize('X,Y', [(0.4, 0.4)])
 def test_linear_TE_tlm(X,Y):
     tlm = TE_tlm(X, Y, T=1, N=500, alpha=0.4, epsilon=0.9)
     tlm.data_generation()
