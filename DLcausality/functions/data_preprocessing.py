@@ -1,26 +1,45 @@
 import numpy as np
 
+def data_for_MLP_XY_Y(dataset, reverse=False):
+    if reverse == False:
+        data_ir = np.array(dataset[["Y_lagged", "Y"]])
+        X_ir = data_ir[:, :-1]
+        Y_ir = data_ir[:, -1:]
 
-def data_for_MLP_XY_Y(dataset):
-    data_ir = np.array(dataset[["Y_lagged", "Y"]])
-    X_ir = data_ir[:, :-1]
-    Y_ir = data_ir[:, -1:]
+        data_jr = np.array(dataset[["X_lagged", "Y_lagged", "Y"]])
+        X_jr = data_jr[:, :-1]
+        Y_jr = data_jr[:, -1:]
 
-    data_jr = np.array(dataset[["X_lagged", "Y_lagged", "Y"]])
-    X_jr = data_jr[:, :-1]
-    Y_jr = data_jr[:, -1:]
+    else:
+        data_ir = np.array(dataset[["X_lagged", "X"]])
+        X_ir = data_ir[:, :-1]
+        Y_ir = data_ir[:, -1:]
+
+        data_jr = np.array(dataset[["X_lagged", "Y_lagged", "X"]])
+        X_jr = data_jr[:, :-1]
+        Y_jr = data_jr[:, -1:]
 
     return X_jr, Y_jr, X_ir, Y_ir
 
 
-def data_for_MLP_XYZ_XY(dataset):
-    data_jr = np.array(dataset[["X_lagged", "Y_lagged", "Z_lagged", "Y"]])
-    X_jr = data_jr[:, :-1]
-    Y_jr = data_jr[:, -1:]
+def data_for_MLP_XYZ_XY(dataset, reverse=False):
+    if reverse == False:
+        data_jr = np.array(dataset[["X_lagged", "Y_lagged", "Z_lagged", "Y"]])
+        X_jr = data_jr[:, :-1]
+        Y_jr = data_jr[:, -1:]
 
-    data_ir = np.array(dataset[["X_lagged", "Y_lagged", "Y"]])
-    X_ir = data_ir[:, :-1]
-    Y_ir = data_ir[:, -1:]
+        data_ir = np.array(dataset[["X_lagged", "Y_lagged", "Y"]])
+        X_ir = data_ir[:, :-1]
+        Y_ir = data_ir[:, -1:]
+
+    else:
+        data_jr = np.array(dataset[["X_lagged", "Y_lagged", "Z_lagged", "X"]])
+        X_jr = data_jr[:, :-1]
+        Y_jr = data_jr[:, -1:]
+
+        data_ir = np.array(dataset[["X_lagged", "Y_lagged", "X"]])
+        X_ir = data_ir[:, :-1]
+        Y_ir = data_ir[:, -1:]
 
     return X_jr, Y_jr, X_ir, Y_ir
 
