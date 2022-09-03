@@ -56,21 +56,34 @@ def process_twp():
 
         validation_N_lag(N, lag)
         twp = TE_twp(T, N, alpha, phi, beta, lag)
-        twp.data_generation()
-        twp.multiple_experiment(num_exp)
-        twp.compute_z_scores_t()
-        md_TE_linear, md_TE_nonlinear = twp.mean_of_diff_TE()
+
+        for i in range(num_exp):
+            twp.data_generation()
+            twp.experiment(reverse=False)
+            twp.experiment(reverse=True)
+
+        twp.compute_z_scores_t(reverse=False)
+        twp.compute_z_scores_t(reverse=True)
+
         z_mean_linear = np.mean(twp.z_scores_linear)
         z_mean_nonlinear = np.mean(twp.z_scores_nonlinear)
+        z_mean_linear_rev = np.mean(twp.z_scores_lin_rev)
+        z_mean_nonlinear_rev = np.mean(twp.z_scores_nonlin_rev)
+
+        mean_z_diff_lin, mean_z_diff_nonlin = twp.z_score_diff_TE()
 
     except ValueError as error_message:
         print(error_message)
 
     else:
-        print("The mean of the linear z-scores for ternary wiener processes after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
-        print("The mean of the nonlinear z-scores for ternary wiener processes after {} experiments is {:.2f}.".format(num_exp, z_mean_nonlinear))
-        print("The mean of the difference between linear TE and conditional TE is {:.2f}.".format(md_TE_linear))
-        print("The mean of the difference between nonlinear TE and conditional TE is {:.2f}.".format(md_TE_nonlinear))
+        print("The mean of the linear z-scores for ternary wiener processes regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
+        print("The mean of the nonlinear z-scores for ternary wiener processes regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp, z_mean_nonlinear))
+        print("The mean of the linear z-scores for ternary wiener processes regarding causality from Y to X after {} experiments is {:.2f}.".format(
+                num_exp, z_mean_linear_rev))
+        print("The mean of the nonlinear z-scores for ternary wiener processes regarding causality from Y to X after {} experiments is {:.2f}.".format(
+                num_exp, z_mean_nonlinear_rev))
+        print("The mean of the linear z-scores for the difference between TE and conditional TE is {:.2f}.".format(mean_z_diff_lin))
+        print("The mean of the nonlinear z-scores for the difference between TE and conditional TE is {:.2f}.".format(mean_z_diff_nonlin))
 
 
 if __name__ == "__main__":

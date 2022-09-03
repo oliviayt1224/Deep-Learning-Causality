@@ -44,19 +44,33 @@ def process_clm():
 
         validation_N_lag(N, 1)
         clm = TE_clm(0.4, 0.4, T, N, alpha, epsilon)
-        clm.data_generation()
-        clm.multiple_experiment(num_exp)
-        clm.compute_z_scores_c()
+
+        for i in range(num_exp):
+            clm.varying_XY()
+            clm.data_generation()
+            clm.experiment(reverse=False)
+            clm.experiment(reverse=True)
+
+        clm.compute_z_scores_c(reverse=False)
+        clm.compute_z_scores_c(reverse=True)
+
         z_mean_linear = np.mean(clm.z_scores_linear)
         z_mean_nonlinear = np.mean(clm.z_scores_nonlinear)
+        z_mean_linear_rev = np.mean(clm.z_scores_lin_rev)
+        z_mean_nonlinear_rev = np.mean(clm.z_scores_nonlin_rev)
 
     except ValueError as error_message:
         print(error_message)
 
     else:
-        print("The mean of the linear z-scores for coupled logistic maps after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
-        print("The mean of the nonlinear z-scores for coupled logistic maps after {} experiments is {:.2f}.".format(num_exp,
+        print("The mean of the linear z-scores for coupled logistic maps regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
+        print("The mean of the nonlinear z-scores for coupled logistic maps regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp,
                                                                                                                 z_mean_nonlinear))
+        print("The mean of the linear z-scores for coupled logistic maps regarding causality from Y to X after {} experiments is {:.2f}.".format(num_exp,
+                                                                                                               z_mean_linear_rev))
+        print("The mean of the nonlinear z-scores for coupled logistic maps regarding causality from Y to X after {} experiments is {:.2f}.".format(
+            num_exp,
+            z_mean_nonlinear_rev))
 
 
 if __name__ == "__main__":

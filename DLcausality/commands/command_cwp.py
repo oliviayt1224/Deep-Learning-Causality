@@ -47,14 +47,14 @@ def process_cwp():
 
         for i in range(num_exp):
             cwp.data_generation()
-            cwp.experiment(reverse=False)
+            # cwp.experiment(reverse=False)
             cwp.experiment(reverse=True)
 
-        cwp.compute_z_scores_c(reverse=False)
+        # cwp.compute_z_scores_c(reverse=False)
         cwp.compute_z_scores_c(reverse=True)
 
-        z_mean_linear = np.mean(cwp.z_scores_linear)
-        z_mean_nonlinear = np.mean(cwp.z_scores_nonlinear)
+        # z_mean_linear = np.mean(cwp.z_scores_linear)
+        # z_mean_nonlinear = np.mean(cwp.z_scores_nonlinear)
         z_mean_lin_rev = np.mean(cwp.z_scores_lin_rev)
         z_mean_nonlin_rev = np.mean(cwp.z_scores_nonlin_rev)
 
@@ -62,9 +62,9 @@ def process_cwp():
         print(error_message)
 
     else:
-        print("The mean of the linear z-scores for coupled wiener processes regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
-        print("The mean of the nonlinear z-scores for coupled wiener processes regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp,
-                                                                                                                z_mean_nonlinear))
+        # print("The mean of the linear z-scores for coupled wiener processes regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
+        # print("The mean of the nonlinear z-scores for coupled wiener processes regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp,
+        #                                                                                                         z_mean_nonlinear))
         print("The mean of the linear z-scores for coupled wiener processes regarding causality from Y to X after {} experiments is {:.2f}.".format(
             num_exp, z_mean_lin_rev))
         print("The mean of the nonlinear z-scores for coupled wiener processes regarding causality from Y to X after {} experiments is {:.2f}.".format(

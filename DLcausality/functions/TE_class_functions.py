@@ -416,38 +416,61 @@ class TE_twp(TE):
         self.dataset = dataset
         self.update_dataset(dataset)
 
-    def mean_of_diff_TE(self):
-        md_TE_linear = np.mean(np.array(self.TE_list_linear_con) - np.array(self.TE_list_linear))
-        # md_TE_shuffle_linear = np.mean(np.array(self.TE_list_shuffle_linear_con)-np.array(self.TE_list_shuffle_linear))
-        md_TE_nonlinear = np.mean(np.array(self.TE_list_nonlinear_con) - np.array(self.TE_list_nonlinear))
-        # md_TE_shuffle_nonlinear = np.mean(np.array(self.TE_list_shuffle_nonlinear_con) - np.array(self.TE_list_shuffle_nonlinear))
+    def z_score_diff_TE(self):
+        diff_TE_linear = np.array(self.TE_list_linear_con) - np.array(self.TE_list_linear)
 
-        return md_TE_linear, md_TE_nonlinear
+        mean = np.mean(np.array(self.TE_list_shuffle_linear_con)-np.array(self.TE_list_shuffle_linear))
+        std = np.std(np.array(self.TE_list_shuffle_linear_con) - np.array(self.TE_list_shuffle_linear))
 
-    def multiple_experiment(self, num_exp, splitting_percentage=0.7):
-        for i in range(num_exp):
+        z_scores_lin_diff = []
 
-            if i > 0:
-                self.data_generation()
+        for diff in diff_TE_linear:
+            z_score = (diff - mean) / std
+            z_scores_lin_diff.append(z_score)
 
-            TE_linear, TE_linear_con = self.linear_TE_XYZ(self.dataset, splitting_percentage)
+        diff_TE_nonlinear = np.array(self.TE_list_nonlinear_con) - np.array(self.TE_list_nonlinear)
 
-            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(self.dataset)
-            TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+        mean = np.mean(np.array(self.TE_list_shuffle_nonlinear_con) - np.array(self.TE_list_shuffle_nonlinear))
+        std = np.std(np.array(self.TE_list_shuffle_nonlinear_con) - np.array(self.TE_list_shuffle_nonlinear))
 
-            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(self.dataset)
-            TE_nonlinear_con = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+        z_scores_nonlin_diff = []
 
-            dataset_shuffle = self.shuffle_series(self.dataset)
-            TE_shuffle_linear, TE_shuffle_linear_con = self.linear_TE_XYZ(dataset_shuffle, splitting_percentage)
+        for diff in diff_TE_nonlinear:
+            z_score = (diff - mean) / std
+            z_scores_nonlin_diff.append(z_score)
 
-            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(dataset_shuffle)
-            TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+        mean_z_diff_lin = np.mean(z_scores_lin_diff)
+        mean_z_diff_nonlin = np.mean(z_scores_nonlin_diff)
 
-            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(dataset_shuffle)
-            TE_shuffle_nonlinear_con = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+        return mean_z_diff_lin, mean_z_diff_nonlin
 
-            if TE_linear != False and TE_shuffle_linear != False and TE_nonlinear != False and TE_shuffle_nonlinear != False and TE_nonlinear_con != False and TE_linear_con != False:
+    def experiment(self, reverse=False, splitting_percentage=0.7):
+
+        if reverse==False:
+            dependent_var = "Y"
+        else:
+            dependent_var = "X"
+
+        TE_linear, TE_linear_con = self.linear_TE_XYZ(self.dataset, dependent_var, splitting_percentage)
+
+        X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(self.dataset, reverse)
+        TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+        X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(self.dataset, reverse)
+        TE_nonlinear_con = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+        dataset_shuffle = self.shuffle_series(self.dataset)
+        TE_shuffle_linear, TE_shuffle_linear_con = self.linear_TE_XYZ(dataset_shuffle, dependent_var, splitting_percentage)
+
+        X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(dataset_shuffle, reverse)
+        TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+        X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(dataset_shuffle, reverse)
+        TE_shuffle_nonlinear_con = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+        if TE_linear != False and TE_shuffle_linear != False and TE_nonlinear != False and TE_shuffle_nonlinear != False and TE_nonlinear_con != False and TE_linear_con != False:
+
+            if reverse == False:
                 self.TE_list_linear.append(TE_linear)
                 self.TE_list_shuffle_linear.append(TE_shuffle_linear)
                 self.TE_list_nonlinear.append(TE_nonlinear)
@@ -457,6 +480,17 @@ class TE_twp(TE):
                 self.TE_list_shuffle_linear_con.append(TE_shuffle_linear_con)
                 self.TE_list_nonlinear_con.append(TE_nonlinear_con)
                 self.TE_list_shuffle_nonlinear_con.append(TE_shuffle_nonlinear_con)
+
+            else:
+                self.TE_list_lin_rev.append(TE_linear)
+                self.TE_list_shuffle_lin_rev.append(TE_shuffle_linear)
+                self.TE_list_nonlin_rev.append(TE_nonlinear)
+                self.TE_list_shuffle_nonlin_rev.append(TE_shuffle_nonlinear)
+
+                self.TE_list_lin_con_rev.append(TE_linear_con)
+                self.TE_list_shuffle_lin_con_rev.append(TE_shuffle_linear_con)
+                self.TE_list_nonlin_con_rev.append(TE_nonlinear_con)
+                self.TE_list_shuffle_nonlin_con_rev.append(TE_shuffle_nonlinear_con)
 
 
 class TE_clm(TE):
@@ -484,32 +518,40 @@ class TE_clm(TE):
         self.X = random.random()
         self.Y = random.random()
 
-    def multiple_experiment(self, num_exp, splitting_percentage=0.7):
-        for i in range(num_exp):
+    def experiment(self, reverse=False, splitting_percentage=0.7):
 
-            if i > 0:
-                self.varying_XY()
-                self.data_generation()
+        if reverse==False:
+            dependent_var = "Y"
+        else:
+            dependent_var = "X"
 
-            TE_linear = self.linear_TE_XY(self.dataset, splitting_percentage)
+        TE_linear = self.linear_TE_XY(self.dataset, dependent_var, splitting_percentage)
 
-            if self.signal:
-                X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(self.dataset)
-                TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+        if self.signal:
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(self.dataset, reverse)
+            TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
 
-                dataset_shuffle = self.shuffle_series(self.dataset)
-                TE_shuffle_linear = self.linear_TE_XY(dataset_shuffle, splitting_percentage)
+            dataset_shuffle = self.shuffle_series(self.dataset)
+            TE_shuffle_linear = self.linear_TE_XY(dataset_shuffle, dependent_var, splitting_percentage)
 
-                X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(dataset_shuffle)
-                TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(dataset_shuffle, reverse)
+            TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
 
-                if TE_linear != False and TE_shuffle_linear != False and TE_nonlinear != False and TE_shuffle_nonlinear != False:
+            if TE_linear != False and TE_shuffle_linear != False and TE_nonlinear != False and TE_shuffle_nonlinear != False:
+
+                if reverse == False:
                     self.TE_list_linear.append(TE_linear)
                     self.TE_list_shuffle_linear.append(TE_shuffle_linear)
                     self.TE_list_nonlinear.append(TE_nonlinear)
                     self.TE_list_shuffle_nonlinear.append(TE_shuffle_nonlinear)
 
-            self.signal = True
+                else:
+                    self.TE_list_lin_rev.append(TE_linear)
+                    self.TE_list_shuffle_lin_rev.append(TE_shuffle_linear)
+                    self.TE_list_nonlin_rev.append(TE_nonlinear)
+                    self.TE_list_shuffle_nonlin_rev.append(TE_shuffle_nonlinear)
+
+        self.signal = True
 
 
 class TE_tlm(TE):
@@ -534,42 +576,60 @@ class TE_tlm(TE):
         self.dataset = dataset
         self.update_dataset(dataset)
 
-    def mean_of_diff_TE(self):
-        md_TE_linear = np.mean(np.array(self.TE_list_linear_con) - np.array(self.TE_list_linear))
-        md_TE_nonlinear = np.mean(np.array(self.TE_list_nonlinear_con) - np.array(self.TE_list_nonlinear))
+    def z_score_diff_TE(self):
+        diff_TE_linear = np.array(self.TE_list_linear_con) - np.array(self.TE_list_linear)
 
-        return md_TE_linear, md_TE_nonlinear
+        mean = np.mean(np.array(self.TE_list_shuffle_linear_con) - np.array(self.TE_list_shuffle_linear))
+        std = np.std(np.array(self.TE_list_shuffle_linear_con) - np.array(self.TE_list_shuffle_linear))
 
-    # def varying_XY(self):
-    #     self.X = random.random()
-    #     self.Y = random.random()
+        z_scores_lin_diff = []
 
-    def multiple_experiment(self, num_exp, splitting_percentage=0.7):
-        for i in range(num_exp):
+        for diff in diff_TE_linear:
+            z_score = (diff - mean) / std
+            z_scores_lin_diff.append(z_score)
 
-            if i > 0:
-                # self.varying_XY()
-                self.data_generation()
+        diff_TE_nonlinear = np.array(self.TE_list_nonlinear_con) - np.array(self.TE_list_nonlinear)
 
-            TE_linear, TE_linear_con = self.linear_TE_XYZ(self.dataset, splitting_percentage)
+        mean = np.mean(np.array(self.TE_list_shuffle_nonlinear_con) - np.array(self.TE_list_shuffle_nonlinear))
+        std = np.std(np.array(self.TE_list_shuffle_nonlinear_con) - np.array(self.TE_list_shuffle_nonlinear))
 
-            if self.signal:
-                X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(self.dataset)
-                TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+        z_scores_nonlin_diff = []
 
-                X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(self.dataset)
-                TE_nonlinear_con = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+        for diff in diff_TE_nonlinear:
+            z_score = (diff - mean) / std
+            z_scores_nonlin_diff.append(z_score)
 
-                dataset_shuffle = self.shuffle_series(self.dataset)
-                TE_shuffle_linear, TE_shuffle_linear_con = self.linear_TE_XYZ(dataset_shuffle, splitting_percentage)
+        mean_z_diff_lin = np.mean(z_scores_lin_diff)
+        mean_z_diff_nonlin = np.mean(z_scores_nonlin_diff)
 
-                X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(dataset_shuffle)
-                TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+        return mean_z_diff_lin, mean_z_diff_nonlin
 
-                X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(dataset_shuffle)
-                TE_shuffle_nonlinear_con = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+    def experiment(self, reverse=False, splitting_percentage=0.7):
+        if reverse == False:
+            dependent_var = "Y"
+        else:
+            dependent_var = "X"
 
-                if TE_linear != False and TE_shuffle_linear != False and TE_nonlinear != False and TE_shuffle_nonlinear != False and TE_nonlinear_con != False and TE_linear_con != False:
+        TE_linear, TE_linear_con = self.linear_TE_XYZ(self.dataset, dependent_var, splitting_percentage)
+
+        if self.signal:
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(self.dataset, reverse)
+            TE_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(self.dataset, reverse)
+            TE_nonlinear_con = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+            dataset_shuffle = self.shuffle_series(self.dataset)
+            TE_shuffle_linear, TE_shuffle_linear_con = self.linear_TE_XYZ(dataset_shuffle, dependent_var, splitting_percentage)
+
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(dataset_shuffle, reverse)
+            TE_shuffle_nonlinear = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+            X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XYZ_XY(dataset_shuffle, reverse)
+            TE_shuffle_nonlinear_con = self.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir, splitting_percentage)
+
+            if TE_linear != False and TE_shuffle_linear != False and TE_nonlinear != False and TE_shuffle_nonlinear != False and TE_nonlinear_con != False and TE_linear_con != False:
+                if reverse == False:
                     self.TE_list_linear.append(TE_linear)
                     self.TE_list_shuffle_linear.append(TE_shuffle_linear)
                     self.TE_list_nonlinear.append(TE_nonlinear)
@@ -580,8 +640,18 @@ class TE_tlm(TE):
                     self.TE_list_nonlinear_con.append(TE_nonlinear_con)
                     self.TE_list_shuffle_nonlinear_con.append(TE_shuffle_nonlinear_con)
 
-            self.signal = True
-            print("The " + str(i+1) + " experiment is finished.")
+                else:
+                    self.TE_list_lin_rev.append(TE_linear)
+                    self.TE_list_shuffle_lin_rev.append(TE_shuffle_linear)
+                    self.TE_list_nonlin_rev.append(TE_nonlinear)
+                    self.TE_list_shuffle_nonlin_rev.append(TE_shuffle_nonlinear)
+
+                    self.TE_list_lin_con_rev.append(TE_linear_con)
+                    self.TE_list_shuffle_lin_con_rev.append(TE_shuffle_linear_con)
+                    self.TE_list_nonlin_con_rev.append(TE_nonlinear_con)
+                    self.TE_list_shuffle_nonlin_con_rev.append(TE_shuffle_nonlinear_con)
+
+        self.signal = True
 
 # a = TE_cwp(T = 1, N = 500, alpha = 0.5, lag = 5, seed1=None, seed2=None)
 # # a = TE_twp(T=1, N=100, alpha=0.5, phi=0.5, beta=0.5, lag=5, seed1=None, seed2=None, seed3=None)
