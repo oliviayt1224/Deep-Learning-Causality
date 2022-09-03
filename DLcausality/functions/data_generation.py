@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from DLcausality.functions.input_validation import *
 
 # Generating a Wiener Process
 def wiener_process(T, N, seed):
@@ -19,6 +20,12 @@ def wiener_process(T, N, seed):
 
 def coupled_wiener_process(T, N, alpha, lag, seed1=None, seed2=None):
 
+    validation_T(T)
+    validation_coeff(alpha)
+    validation_N(N)
+    validation_lag(lag)
+    validation_N_lag(N, lag)
+
     X, time = wiener_process(T=T, N=N, seed=seed1)
     V, time = wiener_process(T=T, N=N, seed=seed2)
 
@@ -35,6 +42,15 @@ def coupled_wiener_process(T, N, alpha, lag, seed1=None, seed2=None):
 
 
 def ternary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, seed3=None):
+
+    validation_T(T)
+    validation_coeff(alpha)
+    validation_coeff(phi)
+    validation_coeff(beta)
+    validation_N(N)
+    validation_lag(lag)
+    validation_N_lag(N, lag)
+
     Z, time = wiener_process(T=T, N=N, seed=seed1)
     V, time = wiener_process(T=T, N=N, seed=seed2)
 
@@ -67,6 +83,15 @@ def coupling_function(p, epsilon, r):
 
 
 def coupled_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
+
+    validation_XY(X)
+    validation_XY(Y)
+    validation_T(T)
+    validation_coeff(alpha)
+    validation_coeff(epsilon)
+    validation_N(N)
+    validation_N_lag(N, 1)
+
     # Generate index and initialise X, Y lists
     timesteps = list(np.linspace(0, T, N))
     (X, Y) = ([X], [Y])
@@ -84,6 +109,14 @@ def coupled_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
 
 
 def ternary_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
+
+    validation_XY(X)
+    validation_XY(Y)
+    validation_T(T)
+    validation_coeff(alpha)
+    validation_coeff(epsilon)
+    validation_N(N)
+    validation_N_lag(N, 1)
 
     timesteps = list(np.linspace(0, T, N))
     (X, Y, Z) = ([X], [Y], [np.random.uniform()])
