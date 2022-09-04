@@ -64,13 +64,9 @@ def process_clm():
 
     else:
         print("The mean of the linear z-scores for coupled logistic maps regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp, z_mean_linear))
-        print("The mean of the nonlinear z-scores for coupled logistic maps regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp,
-                                                                                                                z_mean_nonlinear))
-        print("The mean of the linear z-scores for coupled logistic maps regarding causality from Y to X after {} experiments is {:.2f}.".format(num_exp,
-                                                                                                               z_mean_linear_rev))
-        print("The mean of the nonlinear z-scores for coupled logistic maps regarding causality from Y to X after {} experiments is {:.2f}.".format(
-            num_exp,
-            z_mean_nonlinear_rev))
+        print("The mean of the nonlinear z-scores for coupled logistic maps regarding causality from X to Y after {} experiments is {:.2f}.".format(num_exp, z_mean_nonlinear))
+        print("The mean of the linear z-scores for coupled logistic maps regarding causality from Y to X after {} experiments is {:.2f}.".format(num_exp, z_mean_linear_rev))
+        print("The mean of the nonlinear z-scores for coupled logistic maps regarding causality from Y to X after {} experiments is {:.2f}.".format(num_exp, z_mean_nonlinear_rev))
 
 
 if __name__ == "__main__":
