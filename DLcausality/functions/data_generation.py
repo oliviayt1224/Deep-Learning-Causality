@@ -2,9 +2,26 @@ import numpy as np
 import pandas as pd
 from DLcausality.functions.input_validation import *
 
-# Generating a Wiener Process
-def wiener_process(T, N, seed):
 
+def wiener_process(T, N, seed=None):
+    """ Generate a wiener process.
+
+    Parameters
+    ----------
+    T : `float`
+        time length of the generated series.
+    N : `int`
+        time step of the generated series.
+    seed : `int`, optional
+        the number used to initialize the random number generator.
+
+    Returns
+    -------
+    wiener : `numpy.ndarray`
+        the series of a wiener process.
+    time : `numpy.ndarray`
+        the series of time.
+    """
     if seed is not None:
         np.random.seed(seed)
 
@@ -15,11 +32,35 @@ def wiener_process(T, N, seed):
         time.append(i*dt)
         wiener.append(np.random.normal()*np.sqrt(i*dt))
 
-    return np.array(wiener), np.array(time)
+    wiener = np.array(wiener)
+    time = np.array(time)
+
+    return wiener, time
 
 
 def coupled_wiener_process(T, N, alpha, lag, seed1=None, seed2=None):
+    """ Generate a coupled wiener process.
 
+    Parameters
+    ----------
+    T : `float`
+        time length of the generated series.
+    N : `int`
+        time step of the generated series.
+    alpha : `float`
+        coefficient with a range of [0,1]
+    lag : `lag`
+        time lag.
+    seed1 : `int`, optional
+        the number used to initialize the random number generator.
+    seed2 : `int`, optional
+        the number used to initialize the random number generator.
+
+    Returns
+    -------
+    dataset : `pandas.DataFrame`
+        coupled wiener process.
+    """
     validation_T(T)
     validation_coeff(alpha)
     validation_N(N)
@@ -42,7 +83,34 @@ def coupled_wiener_process(T, N, alpha, lag, seed1=None, seed2=None):
 
 
 def ternary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, seed3=None):
+    """ Generate a ternary wiener process.
 
+    Parameters
+    ----------
+    T : `float`
+        time length of the generated series.
+    N : `int`
+        time step of the generated series.
+    alpha : `float`
+        coefficient with a range of [0,1]
+    phi : `float`
+        coefficient with a range of [0,1]
+    beta : `float`
+        coefficient with a range of [0,1]
+    lag : `lag`
+        time lag.
+    seed1 : `int`, optional
+        the number used to initialize the random number generator.
+    seed2 : `int`, optional
+        the number used to initialize the random number generator.
+    seed3 : `int`, optional
+        the number used to initialize the random number generator.
+
+    Returns
+    -------
+    dataset : `pandas.DataFrame`
+        ternary wiener process.
+    """
     validation_T(T)
     validation_coeff(alpha)
     validation_coeff(phi)
@@ -74,16 +142,70 @@ def ternary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, 
     return dataset
 
 
-def mapping_function(p, r):
-    return r * p * (1 - p)
+def mapping_function(p, r=4):
+    """ Mapping function f for logistic maps.
+
+    Parameters
+    ----------
+    p : `float`
+        previous value.
+    r : `float`, optional
+        positive influencing factor.
+
+    Returns
+    -------
+    new_value : `float`
+        generated new value.
+    """
+    new_value = r * p * (1 - p)
+    return new_value
 
 
-def coupling_function(p, epsilon, r):
+def coupling_function(p, epsilon, r=4):
+    """ Coupling function g for logistic maps.
+
+    Parameters
+    ----------
+    p : `float`
+        previous value.
+    epsilon : `float`
+        coefficient with a range of [0,1]
+    r : `float`, optional
+        positive influencing factor.
+
+    Returns
+    -------
+    new_value : `float`
+        generated new value.
+    """
     return (1 - epsilon) * mapping_function(p, r) + epsilon * mapping_function(mapping_function(p, r), r)
 
 
 def coupled_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
+    """ Generate coupled logistic maps.
 
+    Parameters
+    ----------
+    X : `float`
+        initial value of X.
+    Y : `float`
+        initial value of Y.
+    T : `float`
+        time length of the generated series.
+    N : `int`
+        time step of the generated series.
+    alpha : `float`
+        coefficient with a range of [0,1]
+    epsilon : `float`
+        coefficient with a range of [0,1]
+    r : `float`, optional
+        positive influencing factor.
+
+    Returns
+    -------
+    walk : `pandas.DataFrame`
+        coupled logistic maps.
+    """
     validation_XY(X)
     validation_XY(Y)
     validation_T(T)
@@ -109,7 +231,30 @@ def coupled_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
 
 
 def ternary_logistic_map(X, Y, T, N, alpha, epsilon, r=4):
+    """ Generate ternary logistic maps.
 
+    Parameters
+    ----------
+    X : `float`
+        initial value of X.
+    Y : `float`
+        initial value of Y.
+    T : `float`
+        time length of the generated series.
+    N : `int`
+        time step of the generated series.
+    alpha : `float`
+        coefficient with a range of [0,1]
+    epsilon : `float`
+        coefficient with a range of [0,1]
+    r : `float`, optional
+        positive influencing factor.
+
+    Returns
+    -------
+    walk : `pandas.DataFrame`
+        ternary logistic maps.
+    """
     validation_XY(X)
     validation_XY(Y)
     validation_T(T)
