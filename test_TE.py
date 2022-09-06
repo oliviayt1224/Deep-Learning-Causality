@@ -39,7 +39,7 @@ def test_alpha(alpha):
     with pytest.raises(ValueError) as error:
         cwp = TE_cwp(T=1, N=100, alpha=alpha, lag=5, seed1=None, seed2=None)
         cwp.data_generation()
-    assert error.value.args[0] == "The value of the coefficient should be a number in range of (0,1). Please try again."
+    assert error.value.args[0] == "The value of the coefficient should be a number in range of [0,1]. Please try again."
 
 
 @pytest.mark.parametrize('beta', [-1, 1.1, "half"])
@@ -47,7 +47,7 @@ def test_beta(beta):
     with pytest.raises(ValueError) as error:
         twp = TE_twp(T=1, N=100, alpha=0.5, beta=beta, phi=0.5, lag=5, seed1=None, seed2=None)
         twp.data_generation()
-    assert error.value.args[0] == "The value of the coefficient should be a number in range of (0,1). Please try again."
+    assert error.value.args[0] == "The value of the coefficient should be a number in range of [0,1]. Please try again."
 
 
 @pytest.mark.parametrize('phi', [-1, 1.1, "half"])
@@ -55,7 +55,7 @@ def test_phi(phi):
     with pytest.raises(ValueError) as error:
         twp = TE_twp(T=1, N=100, alpha=0.5, beta=0.5, phi=phi, lag=5, seed1=None, seed2=None)
         twp.data_generation()
-    assert error.value.args[0] == "The value of the coefficient should be a number in range of (0,1). Please try again."
+    assert error.value.args[0] == "The value of the coefficient should be a number in range of [0,1]. Please try again."
 
 
 @pytest.mark.parametrize('epsilon', [-1, 1.1, "half"])
@@ -63,7 +63,7 @@ def test_epsilon(epsilon):
     with pytest.raises(ValueError) as error:
         clm = TE_clm(X=0.1, Y=0.1, T=1, N=100, alpha=0.5, epsilon=epsilon)
         clm.data_generation()
-    assert error.value.args[0] == "The value of the coefficient should be a number in range of (0,1). Please try again."
+    assert error.value.args[0] == "The value of the coefficient should be a number in range of [0,1]. Please try again."
 
 
 @pytest.mark.parametrize('X,Y', [(1, 0), (0, 0.5), ("half", 0.5)])
@@ -95,14 +95,6 @@ def test_nonlinear_TE_cwp(T):
     cwp.data_generation()
     X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(cwp.dataset)
     TE = cwp.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir)
-    assert TE > 0
-
-
-@pytest.mark.parametrize('X,Y', [(random.random(), random.random()), (random.random(), random.random())])
-def test_linear_TE_clm(X,Y):
-    clm = TE_clm(X, Y, T=1, N=500, alpha=0.4, epsilon=0.9)
-    clm.data_generation()
-    TE = clm.linear_TE_XY(clm.dataset)
     assert TE > 0
 
 
