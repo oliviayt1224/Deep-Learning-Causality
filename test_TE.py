@@ -34,7 +34,7 @@ def test_N_lag(N, lag):
     assert error.value.args[0] == "The value of lag should be smaller than N. Please try again."
 
 
-@pytest.mark.parametrize('alpha', [0, -1, 1.1])
+@pytest.mark.parametrize('alpha', [-1, 1.1, "half"])
 def test_alpha(alpha):
     with pytest.raises(ValueError) as error:
         cwp = TE_cwp(T=1, N=100, alpha=alpha, lag=5, seed1=None, seed2=None)
@@ -42,7 +42,7 @@ def test_alpha(alpha):
     assert error.value.args[0] == "The value of the coefficient should be a number in range of (0,1). Please try again."
 
 
-@pytest.mark.parametrize('beta', [0, -1, 1.1])
+@pytest.mark.parametrize('beta', [-1, 1.1, "half"])
 def test_beta(beta):
     with pytest.raises(ValueError) as error:
         twp = TE_twp(T=1, N=100, alpha=0.5, beta=beta, phi=0.5, lag=5, seed1=None, seed2=None)
@@ -50,7 +50,7 @@ def test_beta(beta):
     assert error.value.args[0] == "The value of the coefficient should be a number in range of (0,1). Please try again."
 
 
-@pytest.mark.parametrize('phi', [0, -1, 1.1])
+@pytest.mark.parametrize('phi', [-1, 1.1, "half"])
 def test_phi(phi):
     with pytest.raises(ValueError) as error:
         twp = TE_twp(T=1, N=100, alpha=0.5, beta=0.5, phi=phi, lag=5, seed1=None, seed2=None)
@@ -58,7 +58,7 @@ def test_phi(phi):
     assert error.value.args[0] == "The value of the coefficient should be a number in range of (0,1). Please try again."
 
 
-@pytest.mark.parametrize('epsilon', [0, -1, 1.1])
+@pytest.mark.parametrize('epsilon', [-1, 1.1, "half"])
 def test_epsilon(epsilon):
     with pytest.raises(ValueError) as error:
         clm = TE_clm(X=0.1, Y=0.1, T=1, N=100, alpha=0.5, epsilon=epsilon)
@@ -108,7 +108,7 @@ def test_linear_TE_clm(X,Y):
 
 @pytest.mark.parametrize('X,Y', [(random.random(), random.random()), (random.random(), random.random())])
 def test_nonlinear_TE_clm(X,Y):
-    clm = TE_clm(X, Y, T=1, N=500, alpha=0.4, epsilon=0.9)
+    clm = TE_clm(X, Y, T=1, N=1000, alpha=0.4, epsilon=0.9)
     clm.data_generation()
     X_jr, Y_jr, X_ir, Y_ir = data_for_MLP_XY_Y(clm.dataset)
     TE = clm.nonlinear_TE(X_jr, Y_jr, X_ir, Y_ir)

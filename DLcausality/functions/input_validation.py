@@ -4,7 +4,7 @@ def validation_coeff(coeff):
     except Exception:
         raise ValueError("The value of the coefficient should be a number in range of (0,1). Please try again.")
 
-    if coeff <= 0 or coeff >= 1:
+    if coeff < 0 or coeff > 1:
         raise ValueError("The value of the coefficient should be a number in range of (0,1). Please try again.")
 
     return coeff
