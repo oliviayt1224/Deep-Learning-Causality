@@ -49,7 +49,7 @@ def coupled_wiener_process(T, N, alpha, lag, seed1=None, seed2=None):
         time step of the generated series.
     alpha : `float`
         coefficient with a range of [0,1]
-    lag : `lag`
+    lag : `int`
         time lag.
     seed1 : `int`, optional
         the number used to initialize the random number generator.
@@ -97,7 +97,7 @@ def ternary_wiener_process(T, N, alpha, phi, beta, lag, seed1=None, seed2=None, 
         coefficient with a range of [0,1]
     beta : `float`
         coefficient with a range of [0,1]
-    lag : `lag`
+    lag : `int`
         time lag.
     seed1 : `int`, optional
         the number used to initialize the random number generator.
