@@ -8,18 +8,18 @@ def data_for_MLP_XY_Y(dataset, reverse=False):
     ----------
     dataset : `pandas.DataFrame`
         input dataset.
-    reverse :  `bool`, optional
+    reverse : `bool`, optional
         decide whether X or Y is the dependant variable.
 
     Returns
     -------
-    X_jr : `pandas.DataFrame`
+    X_jr : `numpy.ndarray`
         data of two independent variables.
-    Y_jr : `pandas.DataFrame`
+    Y_jr : `numpy.ndarray`
         data of the dependent variable.
-    X_ir : `pandas.DataFrame`
+    X_ir : `numpy.ndarray`
         data of one independent variable.
-    Y_ir : `pandas.DataFrame`
+    Y_ir : `numpy.ndarray`
         data of the dependent variable.
     """
     if reverse == False:
@@ -55,13 +55,13 @@ def data_for_MLP_XYZ_XY(dataset, reverse=False):
 
     Returns
     -------
-    X_jr : `pandas.DataFrame`
+    X_jr : `numpy.ndarray`
         data of three independent variables.
-    Y_jr : `pandas.DataFrame`
+    Y_jr : `numpy.ndarray`
         data of the dependent variable.
-    X_ir : `pandas.DataFrame`
+    X_ir : `numpy.ndarray`
         data of two independent variables.
-    Y_ir : `pandas.DataFrame`
+    Y_ir : `numpy.ndarray`
         data of the dependent variable.
     """
     if reverse == False:
@@ -112,9 +112,9 @@ def training_testing_set_nonlinear(X, Y, percentage=0.7):
 
     Parameters
     ----------
-    X : `pandas.DataFrame`
+    X : `numpy.ndarray`
         data of the independent variables.
-    Y : `pandas.DataFrame`
+    Y : `numpy.ndarray`
         data of the dependent variable.
     percentage : `float`, optional
         splitting percentage.

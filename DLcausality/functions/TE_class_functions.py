@@ -8,9 +8,68 @@ import random
 
 
 class TE:
+    """Parent class TE"""
+
     def __init__(self, lag=0, dataset=pd.DataFrame([]), TE_list_linear=[], TE_list_shuffle_linear=[],
-                 TE_list_nonlinear=[], TE_list_linear_con = [], TE_list_nonlinear_con = [], TE_list_shuffle_nonlinear=[],TE_list_shuffle_linear_con=[], TE_list_shuffle_nonlinear_con=[], z_scores_linear=[], z_scores_nonlinear=[], TE_list_lin_rev=[], TE_list_shuffle_lin_rev=[],
-                 TE_list_nonlin_rev=[], TE_list_lin_con_rev = [], TE_list_nonlin_con_rev = [], TE_list_shuffle_nonlin_rev=[],TE_list_shuffle_lin_con_rev=[], TE_list_shuffle_nonlin_con_rev=[], z_scores_lin_rev=[], z_scores_nonlin_rev=[], signal=True):
+                 TE_list_nonlinear=[], TE_list_linear_con = [], TE_list_nonlinear_con = [],
+                 TE_list_shuffle_nonlinear=[], TE_list_shuffle_linear_con=[], TE_list_shuffle_nonlinear_con=[],
+                 z_scores_linear=[], z_scores_nonlinear=[], TE_list_lin_rev=[], TE_list_shuffle_lin_rev=[],
+                 TE_list_nonlin_rev=[], TE_list_lin_con_rev = [], TE_list_nonlin_con_rev = [],
+                 TE_list_shuffle_nonlin_rev=[], TE_list_shuffle_lin_con_rev=[], TE_list_shuffle_nonlin_con_rev=[],
+                 z_scores_lin_rev=[], z_scores_nonlin_rev=[], signal=True):
+
+        """ Initialize an instance for class TE.
+
+        Parameters
+        ----------
+        lag : `int`, optional
+            time lag.
+        dataset : `pandas.DataFrame`, optional
+            the dataset used for analysis.
+        TE_list_linear : `list`, optional
+            list of transfer entropy calculated from linear method.
+        TE_list_shuffle_linear  : `list`, optional
+            list of transfer entropy calculated from linear method using shuffled data.
+        TE_list_nonlinear  : `list`, optional
+            list of transfer entropy calculated from nonlinear method.
+        TE_list_linear_con  : `list`, optional
+            list of conditional transfer entropy calculated from linear method.
+        TE_list_nonlinear_con  : `list`, optional
+            list of conditional transfer entropy calculated from nonlinear method.
+        TE_list_shuffle_nonlinear  : `list`, optional
+            list of transfer entropy calculated from nonlinear method using shuffled data.
+        TE_list_shuffle_linear_con  : `list`, optional
+            list of conditional transfer entropy calculated from linear method using shuffled data.
+        TE_list_shuffle_nonlinear_con  : `list`, optional
+            list of conditional transfer entropy calculated from nonlinear method using shuffled data.
+        z_scores_linear  : `list`, optional
+            list of z-scores calculated from linear method.
+        z_scores_nonlinear  : `list`, optional
+            list of z-scores calculated from nonlinear method.
+        TE_list_lin_rev  : `list`, optional
+            list of transfer entropy calculated from linear method in a reverse direction.
+        TE_list_shuffle_lin_rev  : `list`, optional
+            list of transfer entropy calculated from linear method using shuffled data in a reverse direction.
+        TE_list_nonlin_rev  : `list`, optional
+            list of transfer entropy calculated from nonlinear method in a reverse direction.
+        TE_list_lin_con_rev  : `list`, optional
+            list of conditional transfer entropy calculated from linear method in a reverse direction.
+        TE_list_nonlin_con_rev  : `list`, optional
+            list of conditional transfer entropy calculated from nonlinear method in a reverse direction.
+        TE_list_shuffle_nonlin_rev  : `list`, optional
+            list of transfer entropy calculated from nonlinear method using shuffled data in a reverse direction.
+        TE_list_shuffle_lin_con_rev  : `list`, optional
+            list of conditional transfer entropy calculated from linear method using shuffled data in a reverse direction.
+        TE_list_shuffle_nonlin_con_rev  : `list`, optional
+            list of conditional transfer entropy calculated from nonlinear method using shuffled data in a reverse direction.
+        z_scores_lin_rev  : `list`, optional
+            list of z-scores calculated from linear method in a reverse direction.
+        z_scores_nonlin_rev  : `list`, optional
+            list of z-scores calculated from nonlinear method in a reverse direction.
+        signal : `bool`
+            identify whether there is an error showing up in the regression model.
+        """
+
         self.lag = lag
         self.dataset = dataset
         self.TE_list_linear = TE_list_linear
@@ -36,9 +95,31 @@ class TE:
         self.z_scores_nonlin_rev = z_scores_nonlin_rev
 
     def update_dataset(self, new_dataset):
+        """ Update dataset.
+
+        Parameters
+        ----------
+        new_dataset : `pandas.DataFrame`
+            new dataset needed to be used
+
+        """
         self.dataset = new_dataset
 
     def TE_calculation(self, jr, ir):
+        """ Calculate transfer entropy.
+
+        Parameters
+        ----------
+        jr : `list`
+            list of residuals from the regression with more input variables
+        ir : `list`
+            list of residuals from the regression with less input variables
+
+        Returns
+        -------
+        TE : `float`
+            transfer entropy
+        """
 
         var_jr = np.var(jr)
         var_ir = np.var(ir)  
@@ -52,12 +133,41 @@ class TE:
             return False
 
     def validation_Xpred(self, Xpred_old, Xpred_new):
+        """ Check if function sm.add_constant works.
+
+        Parameters
+        ----------
+        Xpred_old : `numpy.ndarray`
+            array before using sm.add_constant
+        Xpred_new : `numpy.ndarray`
+            array after using sm.add_constant
+        Returns
+        -------
+        signal : `bool`
+            error indicator
+        """
 
         if Xpred_old.shape[1] == Xpred_new.shape[1]:
             self.signal = False
         return self.signal
 
     def linear_TE_XY(self, dataset, dependent_var="Y", splitting_percentage=0.7):
+        """ Calculate TE by the linear method for two-variable cases.
+
+        Parameters
+        ----------
+        dataset : `pandas.DataFrame`
+            the dataset used for analysis.
+        dependent_var : `str`, optional
+            determine which one is the dependent variable.
+        splitting_percentage : `float`, optional
+            splitting percentage.
+
+        Returns
+        -------
+        TE : `float`
+            transfer entropy.
+        """
 
         training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
 
@@ -84,6 +194,22 @@ class TE:
         return TE
 
     def linear_TE_XYZ(self, dataset, dependent_var="Y", splitting_percentage=0.7):
+        """ Calculate TE and conditional TE by the linear method for three-variable cases.
+
+        dataset : `pandas.DataFrame`
+            the dataset used for analysis.
+        dependent_var : `str`, optional
+            determine which one is the dependent variable.
+        splitting_percentage : `float`, optional
+            splitting percentage.
+
+        Returns
+        -------
+        TE : `float`
+            transfer entropy.
+        TE_con : `float`
+            conditional transfer entropy.
+        """
 
         training_set, testing_set = training_testing_set_linear(dataset, splitting_percentage)
 
@@ -122,19 +248,32 @@ class TE:
 
         return TE, TE_con
 
-    def shuffle_series(self, DF, only=None):
+    def shuffle_series(self, DF):
+        """ Shuffle the series.
 
-        if only is not None:
-            shuffled_DF = DF.copy()
-            for col in only:
-                series = DF.loc[:, col].to_frame()
-                shuffled_DF[col] = series.apply(np.random.permutation)
-        else:
-            shuffled_DF = DF.apply(np.random.permutation)
+        Parameters
+        ----------
+        DF : `pandas.DataFrame`
+            the dataset needed to be shuffled.
+
+        Returns
+        -------
+        shuffled_DF : `pandas.DataFrame`
+            shuffled dataset.
+        """
+        shuffled_DF = DF.apply(np.random.permutation)
 
         return shuffled_DF
 
     def compute_z_scores_c(self, reverse=False):
+        """ Calculate z-scores for two-variable cases.
+
+        Parameters
+        ----------
+        reverse : `bool`, optional
+            determine whether the analysis is for X->Y or Y->X.
+
+        """
         np.seterr(all='ignore')
 
         if reverse == False:
@@ -168,6 +307,14 @@ class TE:
                 self.z_scores_nonlin_rev.append(z_score)
 
     def compute_z_scores_t(self, reverse=False):
+        """ Calculate z-scores for thee-variable cases.
+
+        Parameters
+        ----------
+        reverse : `bool`, optional
+            determine whether the analysis is for X->Y or Y->X.
+
+        """
         np.seterr(all='ignore')
 
         if reverse == False:
@@ -201,6 +348,22 @@ class TE:
                 self.z_scores_nonlin_rev.append(z_score)
 
     def MLP(self, X, Y, percentage):
+        """ Build up a MLP model.
+
+        Parameters
+        ----------
+        X : `numpy.ndarray`
+            data of independent variables.
+        Y : `numpy.ndarray`
+            data of the dependent variable.
+        percentage : `float`
+            splitting percentage.
+
+        Returns
+        -------
+        resi : `list`
+            list of residuals.
+        """
 
         training_X, testing_X, training_Y, testing_Y = training_testing_set_nonlinear(X, Y, percentage)
         dim = training_X.shape[1]
@@ -216,17 +379,55 @@ class TE:
         return resi
 
     def nonlinear_TE(self, X_jr, Y_jr, X_ir, Y_ir, percentage=0.7):
+        """ Calculate nonlinear TE.
+
+        Parameters
+        ----------
+        X_jr : `numpy.ndarray`
+            data of more independent variables.
+        Y_jr : `numpy.ndarray`
+            data of the dependent variable.
+        X_ir : `numpy.ndarray`
+            data of less independent variables.
+        Y_ir : `numpy.ndarray`
+            data of the dependent variable.
+        percentage : `float`, optional
+            splitting percentage.
+
+        Returns
+        -------
+        TE : `float`
+            transfer_entropy
+        """
 
         joint_residuals = self.MLP(X_jr, Y_jr, percentage)
         independent_residuals = self.MLP(X_ir, Y_ir, percentage)
-        transfer_entropy = self.TE_calculation(joint_residuals, independent_residuals)
+        TE = self.TE_calculation(joint_residuals, independent_residuals)
 
-        return transfer_entropy
+        return TE
 
 
 class TE_cwp(TE):
+    """ Child class for coupled wiener processes. """
 
     def __init__(self, T=1, N=200, alpha=0.5, lag=5, seed1=None, seed2=None):
+        """ Initialize an instance for class TE_cwp.
+
+        Parameters
+        ----------
+        T : `float`, optional
+            time length of the generated series.
+        N : `int`, optional
+            time step of the generated series.
+        alpha : `float`, optional
+            coefficient with a range of [0,1]
+        lag : `int`, optional
+            time lag.
+        seed1 : `int`, optional
+            the number used to initialize the random number generator.
+        seed2 : `int`, optional
+            the number used to initialize the random number generator.
+        """
         TE.__init__(self, lag)
         self.T = T
         self.N = N
@@ -236,11 +437,22 @@ class TE_cwp(TE):
         self.dist = "cwp"
 
     def data_generation(self):
+        """ Generate a coupled wiener process. """
         dataset = coupled_wiener_process(self.T, self.N, self.alpha, self.lag, self.seed1, self.seed2)
         self.dataset = dataset
         self.update_dataset(dataset)
 
     def experiment(self, reverse=False, splitting_percentage=0.7):
+        """ Perform an experiment of calculating TE.
+
+        Parameters
+        ----------
+        reverse : `bool`, optional
+            decide whether X or Y is the dependant variable.
+        splitting_percentage : `float`, optional
+            splitting percentage.
+
+        """
         if reverse==False:
             dependent_var = "Y"
         else:
@@ -280,8 +492,33 @@ class TE_cwp(TE):
 
 
 class TE_twp(TE):
+    """ Child class for ternary wiener processes. """
 
-    def __init__(self, T, N, alpha, phi, beta, lag, seed1=None, seed2=None, seed3=None):
+    def __init__(self, T=1, N=300, alpha=0.5, phi=0.5, beta=0.5, lag=5, seed1=None, seed2=None, seed3=None):
+        """ Initialize an instance for class TE_twp.
+
+        Parameters
+        ----------
+        T : `float`, optional
+            time length of the generated series.
+        N : `int`, optional
+            time step of the generated series.
+        alpha : `float`, optional
+            coefficient with a range of [0,1]
+        phi : `float`, optional
+            coefficient with a range of [0,1]
+        beta : `float`, optional
+            coefficient with a range of [0,1]
+        lag : `int`, optional
+            time lag.
+        seed1 : `int`, optional
+            the number used to initialize the random number generator.
+        seed2 : `int`, optional
+            the number used to initialize the random number generator.
+        seed3 : `int`, optional
+            the number used to initialize the random number generator.
+
+        """
         TE.__init__(self, lag)
         self.T = T
         self.N = N
@@ -294,11 +531,13 @@ class TE_twp(TE):
         self.dist = "twp"
 
     def data_generation(self):
+        """ Generate a ternary wiener process. """
         dataset = ternary_wiener_process(self.T, self.N, self.alpha, self.phi, self.beta, self.lag, seed1=None, seed2=None, seed3=None)
         self.dataset = dataset
         self.update_dataset(dataset)
 
     def z_score_diff_TE(self):
+        """ Calculate z-scores for TE difference. """
         diff_TE_linear = np.array(self.TE_list_linear_con) - np.array(self.TE_list_linear)
 
         mean = np.mean(np.array(self.TE_list_shuffle_linear_con)-np.array(self.TE_list_shuffle_linear))
@@ -327,7 +566,16 @@ class TE_twp(TE):
         return mean_z_diff_lin, mean_z_diff_nonlin
 
     def experiment(self, reverse=False, splitting_percentage=0.7):
+        """ Perform an experiment of calculating TE.
 
+        Parameters
+        ----------
+        reverse : `bool`, optional
+            decide whether X or Y is the dependant variable.
+        splitting_percentage : `float`, optional
+            splitting percentage.
+
+        """
         if reverse==False:
             dependent_var = "Y"
         else:
@@ -534,24 +782,3 @@ class TE_tlm(TE):
                     self.TE_list_shuffle_nonlin_con_rev.append(TE_shuffle_nonlinear_con)
 
         self.signal = True
-
-# a = TE_cwp(T = 1, N = 500, alpha = 0.5, lag = 5, seed1=None, seed2=None)
-# # a = TE_twp(T=1, N=100, alpha=0.5, phi=0.5, beta=0.5, lag=5, seed1=None, seed2=None, seed3=None)
-# # a = TE_clp(X = 0.5, Y = 0.4, T = 1, N = 100, alpha = 0.2, epsilon = 0.4, r=4)
-# # #
-# # a = TE_tlm(X = 0.5, Y = 0.4, T = 1, N = 100, alpha = 0.2, epsilon = 0.4, r=4)
-# a.data_generation()
-# # print(a.linear_TE_XYZ(a.dataset, 0.7))
-# a.multiple_experiment(5)
-# a.compute_z_scores(a.dist)
-# # # # # print(a.TE_list_)
-# print(a.TE_list_shuffle_linear)
-# print(a.TE_list_shuffle_nonlinear)
-# print(np.std(a.TE_list_shuffle_linear))
-# print(np.std(a.TE_list_shuffle_nonlinear))
-# print(a.TE_list_linear)
-# print(a.TE_list_nonlinear)
-# print(a.z_scores_linear)
-# # # # print(np.mean(a.z_scores_linear))
-# print(a.z_scores_nonlinear)
-# # # # print(np.mean(a.z_scores_nonlinear))

@@ -1,6 +1,6 @@
 ## Package "DLcausality"
 ***
-This is a package called ***"DLcausality"*** designed for providing both linear and nonlinear methods of detecting Granger causality. The following sections will introduce the usage of this package.
+This is a package called ***"DLcausality"*** designed for providing both linear and nonlinear methods of detecting Granger causality. The following sections will introduce the usage of the commands in this package. For detailed introduction of each function, please refer to the code of each function and check the docstrings in it.
 
 ### Dependencies
 ***
