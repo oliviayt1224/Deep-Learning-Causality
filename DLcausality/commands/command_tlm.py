@@ -6,8 +6,9 @@ from DLcausality.functions.input_validation import *
 
 
 def process_tlm():
-    """Set the command line arguments."""
-    parser = argparse.ArgumentParser(prog='Deep Learning Causality for Ternary Logistic Maps', description='Investigate the Granger causality using linear and non-linear measures.')
+    """ Set the command line arguments for ternary logistic maps. """
+    parser = argparse.ArgumentParser(prog='Deep Learning Causality for Ternary Logistic Maps',
+                                     description='Investigate the Granger causality using linear and non-linear measures.')
     parser.add_argument('--T', type=float, help='Specify the time length.')
     parser.add_argument('--N', type=int, help='Specify the time step.')
     parser.add_argument('--alpha', type=float, help='Specify the coefficient alpha.')
@@ -64,16 +65,16 @@ def process_tlm():
 
     else:
         print(
-            "The mean of the linear z-scores for ternary logistic maps regarding causality from X to Y after {} experiments is {:.2f}.".format(
+            "The mean of the linear z-scores for ternary logistic maps regarding causality from X to Y given Z after {} experiments is {:.2f}.".format(
                 num_exp, z_mean_linear))
         print(
-            "The mean of the nonlinear z-scores for ternary logistic maps regarding causality from X to Y after {} experiments is {:.2f}.".format(
+            "The mean of the nonlinear z-scores for ternary logistic maps regarding causality from X to Y given Z after {} experiments is {:.2f}.".format(
                 num_exp, z_mean_nonlinear))
         print(
-            "The mean of the linear z-scores for ternary logistic maps regarding causality from Y to X after {} experiments is {:.2f}.".format(
+            "The mean of the linear z-scores for ternary logistic maps regarding causality from Y to X given Z after {} experiments is {:.2f}.".format(
                 num_exp, z_mean_linear_rev))
         print(
-            "The mean of the nonlinear z-scores for ternary logistic maps regarding causality from Y to X after {} experiments is {:.2f}.".format(
+            "The mean of the nonlinear z-scores for ternary logistic maps regarding causality from Y to X given Z after {} experiments is {:.2f}.".format(
                 num_exp, z_mean_nonlinear_rev))
         print("The mean of the linear z-scores for the difference between TE and conditional TE is {:.2f}.".format(
             mean_z_diff_lin))

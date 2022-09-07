@@ -6,8 +6,9 @@ from DLcausality.functions.input_validation import *
 
 
 def process_cwp():
-    """Set the command line arguments."""
-    parser = argparse.ArgumentParser(prog='Deep Learning Causality for Coupled Wiener Processes', description='Investigate the Granger causality using linear and non-linear measures.')
+    """ Set the command line arguments for coupled wiener processes. """
+    parser = argparse.ArgumentParser(prog='Deep Learning Causality for Coupled Wiener Processes',
+                                     description='Investigate the Granger causality using linear and non-linear measures.')
     parser.add_argument('--T', type=float, help='Specify the time length.')
     parser.add_argument('--N', type=int, help='Specify the time step.')
     parser.add_argument('--alpha', type=float, help='Specify the coefficient alpha.')
