@@ -624,8 +624,28 @@ class TE_twp(TE):
 
 
 class TE_clm(TE):
+    """ Child class for coupled logistic maps. """
 
-    def __init__(self, X, Y, T, N, alpha, epsilon, r=4):
+    def __init__(self, X, Y, T=1, N=1000, alpha=0.4, epsilon=0.9, r=4):
+        """ Initialize an instance for class TE_clm.
+
+        Parameters
+        ----------
+        X : `float`
+            initial value of X.
+        Y : `float`
+            initial value of Y.
+        T : `float`, optional
+            time length of the generated series.
+        N : `int`, optional
+            time step of the generated series.
+        alpha : `float`, optional
+            coefficient with a range of [0,1]
+        epsilon : `float`, optional
+            coefficient with a range of [0,1]
+        r : `float`, optional
+            positive influencing factor.
+        """
         TE.__init__(self, lag=1)
         self.T = T
         self.N = N
@@ -637,6 +657,7 @@ class TE_clm(TE):
         self.dist = "clm"
 
     def data_generation(self):
+        """ Generate a coupled logistic map. """
         dataset = coupled_logistic_map(self.X, self.Y, self.T, self.N, self.alpha, self.epsilon, self.r)
         dataset["Y_lagged"] = dataset["Y"].shift(periods=self.lag)
         dataset["X_lagged"] = dataset["X"].shift(periods=self.lag)
@@ -645,11 +666,21 @@ class TE_clm(TE):
         self.update_dataset(dataset)
 
     def varying_XY(self):
+        """ Vary the initial value of X and Y. """
         self.X = random.random()
         self.Y = random.random()
 
     def experiment(self, reverse=False, splitting_percentage=0.7):
+        """ Perform an experiment of calculating TE.
 
+        Parameters
+        ----------
+        reverse : `bool`, optional
+            decide whether X or Y is the dependant variable.
+        splitting_percentage : `float`, optional
+            splitting percentage.
+
+        """
         if reverse==False:
             dependent_var = "Y"
         else:
@@ -685,8 +716,28 @@ class TE_clm(TE):
 
 
 class TE_tlm(TE):
+    """ Child class for ternary logistic maps. """
 
-    def __init__(self, X, Y, T, N, alpha, epsilon, r=4):
+    def __init__(self, X, Y, T=1, N=700, alpha=0.4, epsilon=0.9, r=4):
+        """ Initialize an instance for class TE_tlm.
+
+        Parameters
+        ----------
+        X : `float`
+            initial value of X.
+        Y : `float`
+            initial value of Y.
+        T : `float`, optional
+            time length of the generated series.
+        N : `int`, optional
+            time step of the generated series.
+        alpha : `float`, optional
+            coefficient with a range of [0,1]
+        epsilon : `float`, optional
+            coefficient with a range of [0,1]
+        r : `float`, optional
+            positive influencing factor.
+        """
         TE.__init__(self, lag=1)
         self.T = T
         self.N = N
@@ -698,6 +749,7 @@ class TE_tlm(TE):
         self.dist = "tlm"
 
     def data_generation(self):
+        """ Generate a ternary logistic map. """
         dataset = ternary_logistic_map(self.X, self.Y, self.T, self.N, self.alpha, self.epsilon)
         dataset["Y_lagged"] = dataset["Y"].shift(periods=self.lag)
         dataset["X_lagged"] = dataset["X"].shift(periods=self.lag)
@@ -707,6 +759,7 @@ class TE_tlm(TE):
         self.update_dataset(dataset)
 
     def z_score_diff_TE(self):
+        """ Calculate z-scores for TE difference. """
         diff_TE_linear = np.array(self.TE_list_linear_con) - np.array(self.TE_list_linear)
 
         mean = np.mean(np.array(self.TE_list_shuffle_linear_con) - np.array(self.TE_list_shuffle_linear))
@@ -735,6 +788,16 @@ class TE_tlm(TE):
         return mean_z_diff_lin, mean_z_diff_nonlin
 
     def experiment(self, reverse=False, splitting_percentage=0.7):
+        """ Perform an experiment of calculating TE.
+
+        Parameters
+        ----------
+        reverse : `bool`, optional
+            decide whether X or Y is the dependant variable.
+        splitting_percentage : `float`, optional
+            splitting percentage.
+
+        """
         if reverse == False:
             dependent_var = "Y"
         else:
